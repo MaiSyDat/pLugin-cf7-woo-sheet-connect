@@ -41,9 +41,7 @@ function cwsc_get_effective_form_settings( $form_id ) {
     );
 }
 
-/**
- * Lấy thời gian hiện tại
- */
+// Get time hiện tại
 function cwsc_get_current_timestamp() {
     return current_time( 'mysql' );
 }

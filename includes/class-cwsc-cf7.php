@@ -42,30 +42,12 @@ class CWSC_CF7 {
             'mapping' => array()
         ));
 
-        // // Kiểm tra xem Google API có khả dụng không
+        // Kiểm tra Google API có khả dụng không
         $google_api_available = cwsc_is_google_api_available();
-
-        // Kiểm tra xem đã có thông tin Service Account JSON chưa
         $global_settings = cwsc_get_settings();
         $has_credentials = !empty( $global_settings['google_service_account'] );
         ?>
         <h2><?php _e('Tích hợp Google Sheets', 'cf7-woo-sheet-connector'); ?></h2>
-        
-         <!-- Báo lỗi nếu chưa cài composer -->
-        <?php if ( !$google_api_available ): ?>
-            <div class="notice notice-error inline">
-                <p><?php _e( 'Không tìm thấy thư viện Google API. Vui lòng chạy composer install trong thư mục plugin.', 'cf7-woo-sheet-connector' ); ?></p>
-            </div>
-
-        <!-- Báo nếu chưa cấu hình thông tin service account -->
-        <?php elseif ( !$has_credentials ): ?>
-            <div class="notice notice-warning inline">
-                <p>
-                    <?php _e( 'Vui lòng cấu hình thông tin xác thực Google Service Account tại', 'cf7-woo-sheet-connector' ); ?>
-                    <a href="<?php echo admin_url( 'options-general.php?page=cwsc-settings' ); ?>"><?php _e('Cài đặt → Kết nối Google Sheet', 'cf7-woo-sheet-connector' ); ?></a>
-                </p>
-            </div>
-        <?php endif; ?>
 
         <!-- Phần form cài đặt -->
         <fieldset>
@@ -152,7 +134,7 @@ class CWSC_CF7 {
         $settings = get_post_meta( $form_id, '_cwsc_settings', true );
         
 
-        // Return ếu chưa bật hoặc thiếu Spreadsheet ID
+        // Return nếu chưa bật hoặc thiếu Spreadsheet ID
         if ( empty( $settings['enabled'] ) || empty( $settings['spreadsheet_id'] ) ) {
             return;
         }

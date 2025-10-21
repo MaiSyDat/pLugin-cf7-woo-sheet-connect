@@ -26,7 +26,7 @@ class CWSC_Google_Client {
         try {
             // Check if Google API library exists
             if ( !file_exists( CWSC_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
-                throw new Exception( 'Không tìm thấy thư viện Google API. Vui lòng chạy lệnh cài đặt composer.' );
+                throw new Exception( 'Không tìm thấy thư viện Google API. Vui lòng chạy lệnh composer install trong thư mục /wp-content/plugins/cf7-woo-sheet-connector' );
             }
 
             require_once CWSC_PLUGIN_DIR . 'vendor/autoload.php';

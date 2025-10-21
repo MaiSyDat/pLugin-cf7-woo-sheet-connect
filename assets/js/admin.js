@@ -46,14 +46,12 @@ jQuery(document).ready(function($) {
         
         // Kiểm tra định dạng Spreadsheet ID
         if (spreadsheetId && !isValidSpreadsheetId(spreadsheetId)) {
-            alert('Please enter a valid Google Spreadsheet ID');
             e.preventDefault();
             return false;
         }
         
         // Kiểm tra định dạng Sheet Name
         if (sheetName && !isValidSheetName(sheetName)) {
-            alert('Please enter a valid sheet name');
             e.preventDefault();
             return false;
         }
@@ -73,8 +71,6 @@ jQuery(document).ready(function($) {
     // Copy to clipboard functionality for spreadsheet ID
     $('.copy-spreadsheet-id').on('click', function() {
         var id = $(this).data('id');
-        navigator.clipboard.writeText(id).then(function() {
-            alert('Spreadsheet ID copied to clipboard!');
-        });
+        navigator.clipboard.writeText(id);
     });
 });

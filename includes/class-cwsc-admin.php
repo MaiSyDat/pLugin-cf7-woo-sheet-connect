@@ -105,30 +105,6 @@ class CWSC_Admin {
     }
 
     /**
-     * Display admin notices
-     */
-    private function display_admin_notices() {
-        $settings = cwsc_get_settings();
-        
-         // Báo lỗi nếu chưa cài Google API Library
-        if ( !cwsc_is_google_api_available() ) {
-            echo '<div class="notice notice-error"><p>' . esc_html__( 'Không tìm thấy thư viện Google API. Vui lòng cài đặt phụ thuộc Composer.', 'cf7-woo-sheet-connector' ) . '</p></div>';
-        }
-
-        // Báo lỗi nếu chưa nhập Service Account JSON
-        if ( empty( $settings['google_service_account'] ) ) {
-            echo '<div class="notice notice-warning"><p>' . esc_html__( 'Vui lòng cấu hình thông tin tài khoản dịch vụ Google để bắt đầu sử dụng.', 'cf7-woo-sheet-connector' ) . '</p></div>';
-        }
-
-        // Hiển thị kết quả test connection
-        if ( !empty( $settings['test_connection_status'] ) ) {
-            $status = $settings['test_connection_status'];
-            $class = $status['success'] ? 'notice-success' : 'notice-error';
-            echo '<div class="notice ' . $class . '"><p>' . esc_html( $status['message'] ) . '</p></div>';
-        }
-    }
-
-    /**
      * Làm sạch (sanitize) dữ liệu trước khi lưu setting
      */
     public function sanitize_settings( $input ) {
