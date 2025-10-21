@@ -1,0 +1,385 @@
+/* CF7 WooCommerce Sheet Connector Admin Styles */
+
+.wrap .form-table th {
+    width: 200px;
+}
+
+.widefat {
+    margin-top: 10px;
+}
+
+.widefat th,
+.widefat td {
+    padding: 8px;
+    vertical-align: middle;
+}
+
+.widefat th {
+    background-color: #f1f1f1;
+    font-weight: 600;
+}
+
+.woo-settings {
+    transition: all 0.3s ease;
+}
+
+.cwsc-settings {
+    transition: all 0.3s ease;
+}
+
+/* Mapping table styles */
+.mapping-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.mapping-table th,
+.mapping-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.mapping-table th {
+    background-color: #f9f9f9;
+    font-weight: 600;
+}
+
+.mapping-table input[type="text"],
+.mapping-table select {
+    width: 100%;
+    max-width: 200px;
+}
+
+/* Button styles */
+.button.button-small {
+    padding: 2px 8px;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.remove-mapping {
+    color: #a00;
+    border-color: #a00;
+}
+
+.remove-mapping:hover {
+    background-color: #a00;
+    color: #fff;
+    border-color: #a00;
+}
+
+/* Connection status */
+#connection-status {
+    margin-left: 10px;
+    font-weight: 600;
+}
+
+#connection-status .success {
+    color: #46b450;
+}
+
+#connection-status .error {
+    color: #dc3232;
+}
+
+/* Validation styles */
+.validation-warning {
+    border-color: #ffb900 !important;
+    background-color: #fff8e5 !important;
+}
+
+.validation-hint {
+    display: block;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+/* Import/Export buttons */
+#import-export-section {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+#import-export-section h4 {
+    margin-top: 0;
+}
+
+#import-export-section .button {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+/* Spreadsheet ID display */
+.spreadsheet-id-display {
+    background-color: #f1f1f1;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-family: monospace;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+/* Notice styles */
+.notice.inline {
+    margin: 5px 0 15px;
+    padding: 1px 12px;
+}
+
+.notice.inline p {
+    margin: 0.5em 0;
+}
+
+/* Form field spacing */
+.form-table tr {
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.form-table tr:last-child {
+    border-bottom: none;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0073aa;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media screen and (max-width: 782px) {
+    .form-table th,
+    .form-table td {
+        display: block;
+        width: 100%;
+    }
+    
+    .form-table th {
+        padding-bottom: 5px;
+    }
+    
+    .form-table td {
+        padding-top: 0;
+    }
+    
+    .mapping-table {
+        font-size: 12px;
+    }
+    
+    .mapping-table input[type="text"],
+    .mapping-table select {
+        max-width: 100%;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .validation-warning {
+        border-color: #ffb900 !important;
+        background-color: #2c2c2c !important;
+    }
+    
+    .validation-hint {
+        color: #ccc;
+    }
+    
+    #import-export-section {
+        background-color: #2c2c2c;
+        border-color: #444;
+    }
+    
+    .spreadsheet-id-display {
+        background-color: #2c2c2c;
+        color: #fff;
+    }
+}
+
+/* Accessibility improvements */
+.button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    box-shadow: 0 0 0 1px #0073aa;
+    outline: none;
+}
+
+.screen-reader-text {
+    clip: rect(1px, 1px, 1px, 1px);
+    position: absolute !important;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+}
+
+/* Tooltip styles */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-indicator.success {
+    background-color: #46b450;
+}
+
+.status-indicator.error {
+    background-color: #dc3232;
+}
+
+.status-indicator.warning {
+    background-color: #ffb900;
+}
+
+.status-indicator.info {
+    background-color: #0073aa;
+}
+
+/* Progress bar */
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #0073aa;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+/* Tab navigation */
+.nav-tab-wrapper {
+    margin-bottom: 20px;
+}
+
+.nav-tab {
+    text-decoration: none;
+    padding: 8px 12px;
+    margin-right: 5px;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    border-radius: 3px 3px 0 0;
+}
+
+.nav-tab.active {
+    background-color: #fff;
+    border-bottom: 1px solid #fff;
+    margin-bottom: -1px;
+}
+
+.nav-tab:hover {
+    background-color: #fff;
+}
+
+/* Card layout */
+.cwsc-card {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.cwsc-card h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+/* Help text */
+.help-text {
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+/* Success/Error messages */
+.cwsc-message {
+    padding: 10px 15px;
+    border-radius: 3px;
+    margin: 15px 0;
+}
+
+.cwsc-message.success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.cwsc-message.error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.cwsc-message.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.cwsc-message.info {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
