@@ -151,8 +151,7 @@ class CWSC_WooCommerce {
 
         // Danh sách field mặc định của WooCommerce
         $woo_fields = array(
-            'billing_first_name' => 'Tên',
-            'billing_last_name' => 'Họ',
+            'billing_full_name' => 'Họ tên',
             'billing_phone' => 'Số điện thoại',
             'billing_email' => 'Email',
             'billing_address_1' => 'Địa chỉ',
@@ -360,11 +359,10 @@ class CWSC_WooCommerce {
             $value = '';
             
             switch ( $woo_field ) {
-                case 'billing_first_name':
-                    $value = $order->get_billing_first_name();
-                    break;
-                case 'billing_last_name':
-                    $value = $order->get_billing_last_name();
+                case 'billing_full_name':
+                    $first_name = $order->get_billing_first_name();
+                    $last_name = $order->get_billing_last_name();
+                    $value = trim($first_name . ' ' . $last_name);
                     break;
                 case 'billing_phone':
                     $value = $order->get_billing_phone();
@@ -422,14 +420,20 @@ class CWSC_WooCommerce {
         }
 
         // Thêm thông tin meta chung
-        $data = array_merge(
-            array(
-                'submitted_at' => cwsc_get_current_timestamp(),
-                'source' => 'woocommerce',
-                'order_id' => $order->get_id(),
-            ),
-            $data
+        $metadata_fields = array(
+            'submit-time' => cwsc_get_current_timestamp(),
+            'customer-source' => cwsc_get_referrer(),
+            'order-link' => cwsc_get_current_url(),
+            'buy-link' => cwsc_get_current_url(),
+            'source' => 'woocommerce',
+            'order_id' => $order->get_id(),
         );
+        
+        foreach ($metadata_fields as $key => $value) {
+            if (!isset($data[$key]) || empty($data[$key])) {
+                $data[$key] = $value;
+            }
+        }
 
         return $data;
     }

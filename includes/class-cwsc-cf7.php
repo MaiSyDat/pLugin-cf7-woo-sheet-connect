@@ -191,16 +191,19 @@ class CWSC_CF7 {
             $data[$key] = (string) $value;
         }
 
-        // Add helpful metadata columns
-        $data = array_merge(
-            array(
-                'submitted_at' => cwsc_get_current_timestamp(),
-                'page_url' => cwsc_get_current_url(),
-                'referrer' => cwsc_get_referrer(),
-                'ip_address' => cwsc_get_customer_ip()
-            ),
-            $data
+        // Add helpful metadata columns only if not already present in form data
+        $metadata_fields = array(
+            'submit-time' => cwsc_get_current_timestamp(),
+            'customer-source' => cwsc_get_referrer(),
+            'order-link' => cwsc_get_current_url(),
+            'buy-link' => cwsc_get_current_url()
         );
+        
+        foreach ($metadata_fields as $key => $value) {
+            if (!isset($data[$key]) || empty($data[$key])) {
+                $data[$key] = $value;
+            }
+        }
 
         return $data;
     }
