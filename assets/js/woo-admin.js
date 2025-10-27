@@ -69,6 +69,45 @@ jQuery(document).ready(function($) {
             $.each(currentValues, function(name, value) {
                 $('select[name="' + name + '"]').val(value);
             });
+            // Ẩn các field đã được chọn
+            updateFieldVisibility();
         }, 1000);
     }
+
+    // Hàm ẩn các field CF7 đã được chọn
+    function updateFieldVisibility() {
+        var selectedValues = [];
+        
+        // Thu thập tất cả các giá trị đã được chọn
+        $('.cf7-field-select').each(function() {
+            var val = $(this).val();
+            if (val && val !== '') {
+                selectedValues.push(val);
+            }
+        });
+        
+        // Cập nhật tất cả các select box
+        $('.cf7-field-select').each(function() {
+            var currentVal = $(this).val();
+            var $options = $(this).find('option');
+            
+            $options.each(function() {
+                var $option = $(this);
+                var optionVal = $option.val();
+                
+                // Ẩn option nếu nó đã được chọn trong select box khác
+                if (optionVal && optionVal !== currentVal && selectedValues.indexOf(optionVal) !== -1) {
+                    $option.hide();
+                } else {
+                    $option.show();
+                }
+            });
+        });
+    }
+
+    // Khi người dùng thay đổi selection trong mapping
+    $(document).on('change', '.cf7-field-select', function() {
+        // Cập nhật lại visibility của tất cả options
+        updateFieldVisibility();
+    });
 });
