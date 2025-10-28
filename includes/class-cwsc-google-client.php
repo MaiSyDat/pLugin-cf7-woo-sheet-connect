@@ -1,7 +1,6 @@
 <?php
 /**
  * Google API Client Class
- * Handles Google Sheets API operations
  */
 
 if ( !defined( 'ABSPATH' ) ) {

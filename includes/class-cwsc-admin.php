@@ -9,6 +9,9 @@ if ( !defined( 'ABSPATH' ) ) {
 
 class CWSC_Admin {
 
+    /**
+     * Contructor
+     */
     public function __construct() {
         add_action( 'admin_menu', array($this, 'add_admin_menu' ) );
         add_action( 'admin_init', array($this, 'register_settings' ) );
@@ -21,8 +24,8 @@ class CWSC_Admin {
      */
     public function add_admin_menu() {
         add_options_page(
-            __( 'Kết nối đến dịch vụ Google API', 'cf7-woo-sheet-connector' ),
-            __( 'Kết nối đến dịch vụ Google API', 'cf7-woo-sheet-connector' ),
+            __( 'Connect to Google API service', 'cf7-woo-sheet-connector' ),
+            __( 'Connect to Google API service', 'cf7-woo-sheet-connector' ),
             'manage_options',
             'cwsc-settings',
             array( $this, 'settings_page' )
@@ -51,9 +54,9 @@ class CWSC_Admin {
             'ajax_url' => admin_url( 'admin-ajax.php' ),
             'nonce' => wp_create_nonce( 'cwsc_nonce' ),
             'strings' => array(
-                'testing_connection' => __( 'Đang kiểm tra kết nối...', 'cf7-woo-sheet-connector' ),
-                'connection_success' => __( 'Kết nối thành công!', 'cf7-woo-sheet-connector' ),
-                'connection_failed' => __( 'Kết nối thất bại!', 'cf7-woo-sheet-connector' ),
+                'testing_connection' => __( 'Checking connection...', 'cf7-woo-sheet-connector' ),
+                'connection_success' => __( 'Connection successful!', 'cf7-woo-sheet-connector' ),
+                'connection_failed' => __( 'Connection failed!', 'cf7-woo-sheet-connector' ),
             )
         ));
     }
@@ -76,23 +79,23 @@ class CWSC_Admin {
                 <table class="form-table">
                     <tr>
                         <th scope="row">
-                            <label for="google_service_account"><?php _e( 'Tài khoản Dịch vụ Google', 'cf7-woo-sheet-connector' ); ?></label>
+                            <label for="google_service_account"><?php _e( 'Google Service Account', 'cf7-woo-sheet-connector' ); ?></label>
                         </th>
                         <td>
                             <textarea id="google_service_account" name="cwsc_settings[google_service_account]" rows="10" class="large-text code"><?php echo esc_textarea( $settings['google_service_account'] ?? '' ); ?></textarea>
                             <p class="description">
-                                <?php _e( 'Dán toàn bộ nội dung tệp JSON của Tài khoản Dịch vụ Google vào ô trên đây.', 'cf7-woo-sheet-connector' ); ?>
+                                <?php _e( 'Paste the entire contents of the Google Service Account JSON file into the box above.', 'cf7-woo-sheet-connector' ); ?>
                                 <br>
-                                <a href="https://console.cloud.google.com/apis/credentials" target="_blank"><?php _e( 'Nhận thông tin đăng nhập từ Google Cloud Console', 'cf7-woo-sheet-connector' ); ?></a>
+                                <a href="https://console.cloud.google.com/apis/credentials" target="_blank"><?php _e( 'Get credentials from Google Cloud Console', 'cf7-woo-sheet-connector' ); ?></a>
                             </p>
                         </td>
                     </tr>
-                    
+                    <!-- Check connection -->
                     <tr>
-                        <th scope="row"><?php _e( 'Kiểm tra kết nối', 'cf7-woo-sheet-connector' ); ?></th>
+                        <th scope="row"><?php _e( 'Check connection', 'cf7-woo-sheet-connector' ); ?></th>
                         <td>
                             <button type="button" id="test-connection" class="button button-secondary">
-                                <?php _e( 'Kiểm tra kết nối', 'cf7-woo-sheet-connector' ); ?>
+                                <?php _e( 'Check connection', 'cf7-woo-sheet-connector' ); ?>
                             </button>
                             <span id="connection-status"></span>
                         </td>
@@ -105,7 +108,7 @@ class CWSC_Admin {
     }
 
     /**
-     * Làm sạch (sanitize) dữ liệu trước khi lưu setting
+     * Sanitize data before saving settings
      */
     public function sanitize_settings( $input ) {
         $sanitized = array();
@@ -135,7 +138,7 @@ class CWSC_Admin {
         check_ajax_referer( 'cwsc_nonce', 'nonce' );
         
         if ( !current_user_can( 'manage_options' ) ) {
-            wp_die(__( 'Bạn không có đủ quyền để truy cập trang này.', 'cf7-woo-sheet-connector' ) );
+            wp_die(__( 'You do not have sufficient permissions to access this page.', 'cf7-woo-sheet-connector' ) );
         }
 
         try {
