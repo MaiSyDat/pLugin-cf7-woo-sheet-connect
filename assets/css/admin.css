@@ -1,385 +1,273 @@
-/* CF7 WooCommerce Sheet Connector Admin Styles */
-
-.wrap .form-table th {
-    width: 200px;
+.cwsc-admin-setting,
+.cwsc-sheet-cf7-setting,
+.cwsc-woo-setting {
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
 }
 
-.widefat {
-    margin-top: 10px;
+/* cwsc-form-table base */
+.cwsc-form-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.widefat th,
-.widefat td {
-    padding: 8px;
-    vertical-align: middle;
+.cwsc-form-table th {
+  width: 220px !important;
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 0 10px;
+  color: #23282d;
+  font-weight: 500;
 }
 
-.widefat th {
-    background-color: #f1f1f1;
-    font-weight: 600;
+.cwsc-form-table td {
+  padding: 10px 0 20px;
 }
 
-.woo-settings {
-    transition: all 0.3s ease;
+/* Input field base */
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="number"],
+input[type="password"],
+.regular-text,
+.large-text,
+textarea,
+select.regular-text,
+.cf7-field-select {
+  border: 1px solid #ccd0d4;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: #fff;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
-.cwsc-settings {
-    transition: all 0.3s ease;
+textarea {
+  font-family: monospace;
+  background: #f9fafb;
+  min-height: 200px;
 }
 
-/* Mapping table styles */
-.mapping-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin-top: 10px;
-}
-
-.mapping-table th,
-.mapping-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
-.mapping-table th {
-    background-color: #f9f9f9;
-    font-weight: 600;
-}
-
-.mapping-table input[type="text"],
-.mapping-table select {
-    width: 100%;
-    max-width: 200px;
-}
-
-/* Button styles */
-.button.button-small {
-    padding: 2px 8px;
-    font-size: 11px;
-    line-height: 1.5;
-}
-
-.remove-mapping {
-    color: #a00;
-    border-color: #a00;
-}
-
-.remove-mapping:hover {
-    background-color: #a00;
-    color: #fff;
-    border-color: #a00;
-}
-
-/* Connection status */
-#connection-status {
-    margin-left: 10px;
-    font-weight: 600;
-}
-
-#connection-status .success {
-    color: #46b450;
-}
-
-#connection-status .error {
-    color: #dc3232;
-}
-
-/* Validation styles */
-.validation-warning {
-    border-color: #ffb900 !important;
-    background-color: #fff8e5 !important;
-}
-
-.validation-hint {
-    display: block;
-    margin-top: 5px;
-    font-style: italic;
-}
-
-/* Import/Export buttons */
-#import-export-section {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 3px;
-}
-
-#import-export-section h4 {
-    margin-top: 0;
-}
-
-#import-export-section .button {
-    margin-right: 10px;
-    margin-bottom: 10px;
-}
-
-/* Spreadsheet ID display */
-.spreadsheet-id-display {
-    background-color: #f1f1f1;
-    padding: 5px 10px;
-    border-radius: 3px;
-    font-family: monospace;
-    display: inline-block;
-    margin-left: 10px;
-}
-
-/* Notice styles */
-.notice.inline {
-    margin: 5px 0 15px;
-    padding: 1px 12px;
-}
-
-.notice.inline p {
-    margin: 0.5em 0;
-}
-
-/* Form field spacing */
-.form-table tr {
-    border-bottom: 1px solid #f0f0f1;
-}
-
-.form-table tr:last-child {
-    border-bottom: none;
-}
-
-/* Loading states */
-.loading {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 20px;
-    margin: -10px 0 0 -10px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #0073aa;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Responsive design */
-@media screen and (max-width: 782px) {
-    .form-table th,
-    .form-table td {
-        display: block;
-        width: 100%;
-    }
-    
-    .form-table th {
-        padding-bottom: 5px;
-    }
-    
-    .form-table td {
-        padding-top: 0;
-    }
-    
-    .mapping-table {
-        font-size: 12px;
-    }
-    
-    .mapping-table input[type="text"],
-    .mapping-table select {
-        max-width: 100%;
-    }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .validation-warning {
-        border-color: #ffb900 !important;
-        background-color: #2c2c2c !important;
-    }
-    
-    .validation-hint {
-        color: #ccc;
-    }
-    
-    #import-export-section {
-        background-color: #2c2c2c;
-        border-color: #444;
-    }
-    
-    .spreadsheet-id-display {
-        background-color: #2c2c2c;
-        color: #fff;
-    }
-}
-
-/* Accessibility improvements */
-.button:focus,
 input:focus,
-select:focus,
-textarea:focus {
-    box-shadow: 0 0 0 1px #0073aa;
-    outline: none;
+textarea:focus,
+select:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  outline: none;
+  background: #fff;
 }
 
-.screen-reader-text {
-    clip: rect(1px, 1px, 1px, 1px);
-    position: absolute !important;
-    height: 1px;
-    width: 1px;
-    overflow: hidden;
+/* Checkbox */
+input[type="checkbox"] {
+  transform: scale(1.2);
+  margin-right: 6px;
+  accent-color: #2271b1;
 }
 
-/* Tooltip styles */
-.tooltip {
-    position: relative;
-    display: inline-block;
-    cursor: help;
+/* Description text */
+.description {
+  font-size: 13px;
+  color: #666;
+  margin-top: 6px;
+  line-height: 1.5;
 }
 
-.tooltip .tooltiptext {
-    visibility: hidden;
-    width: 200px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -100px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-size: 12px;
+/* Buttons */
+.button-primary {
+  background: #2271b1;
+  border-radius: 6px;
+  padding: 6px 20px;
+  font-size: 15px;
+  color: #fff;
+  border: none;
+  transition: background 0.2s ease, transform 0.1s;
 }
 
-.tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
+.button-primary:hover {
+  background: #135e96;
 }
 
-/* Status indicators */
-.status-indicator {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 5px;
+.button.button-secondary,
+#test-connection {
+  background-color: #f3f4f6;
+  color: #1d2327;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
 }
 
-.status-indicator.success {
-    background-color: #46b450;
+.button.button-secondary:hover,
+#test-connection:hover {
+  background-color: #2271b1;
+  color: #fff;
 }
 
-.status-indicator.error {
-    background-color: #dc3232;
-}
-
-.status-indicator.warning {
-    background-color: #ffb900;
-}
-
-.status-indicator.info {
-    background-color: #0073aa;
-}
-
-/* Progress bar */
-.progress-bar {
+/* Responsive */
+@media (max-width: 768px) {
+  .cwsc-form-table th {
+    display: block;
     width: 100%;
-    height: 20px;
-    background-color: #f0f0f0;
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 10px 0;
+    margin-bottom: 4px;
+  }
+  .cwsc-form-table td {
+    display: block;
+    padding-bottom: 15px;
+  }
 }
 
-.progress-bar-fill {
-    height: 100%;
-    background-color: #0073aa;
-    transition: width 0.3s ease;
-    border-radius: 10px;
+/*================ GOOGLE API SETTINGS ================*/
+.cwsc-admin-setting h1 {
+  margin-bottom: 30px;
 }
 
-/* Tab navigation */
-.nav-tab-wrapper {
-    margin-bottom: 20px;
+/* JSON Textarea */
+.cwsc-admin-setting textarea {
+  min-height: 200px;
 }
 
-.nav-tab {
-    text-decoration: none;
-    padding: 8px 12px;
-    margin-right: 5px;
-    background-color: #f1f1f1;
-    border: 1px solid #ccc;
-    border-bottom: none;
-    border-radius: 3px 3px 0 0;
+.test-connection-wrap {
+    display: flex;
+    align-items: center;
 }
 
-.nav-tab.active {
-    background-color: #fff;
-    border-bottom: 1px solid #fff;
-    margin-bottom: -1px;
+#connection-status {
+  margin-left: 15px;
+  font-weight: 500;
 }
 
-.nav-tab:hover {
-    background-color: #fff;
+#connection-status.success {
+  color: #198754;
 }
 
-/* Card layout */
-.cwsc-card {
-    background: #fff;
-    border: 1px solid #ccd0d4;
-    border-radius: 4px;
+#connection-status.error {
+  color: #dc3545;
+}
+
+/*================ CF7 SHEET SETTINGS ================*/
+.cwsc-sheet-cf7-setting {
+  padding: 25px 35px;
+}
+
+.cwsc-sheet-cf7-setting fieldset {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px 25px;
+  margin-bottom: 25px;
+  background-color: #fafafa;
+}
+
+.cwsc-sheet-cf7-setting legend {
+  font-weight: 600;
+  color: #333;
+  padding: 0 8px;
+  font-size: 15px;
+}
+
+.cwsc-sheet-cf7-setting .cwsc-settings[style*="display:none"] {
+  opacity: 0.3;
+}
+
+/*================ WOOCOMMERCE MAPPING SETTINGS ================*/
+.cwsc-woo-setting {
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+}
+
+.cwsc-woo-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+/* Woo section box */
+.cwsc-woo-section {
+  background: #fafafa;
+  border: 1px solid #e3e3e3;
+  border-radius: 10px;
+  padding: 20px 25px;
+  margin-bottom: 25px;
+}
+
+.cwsc-woo-section h2 {
+  font-size: 18px;
+  color: #1d2327;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.cwsc-woo-section p {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+/* Mapping Table */
+#mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+#mapping-table thead {
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+#mapping-table th {
+  text-align: left;
+  padding: 12px 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+#mapping-table td {
+  padding: 12px 15px;
+  border-top: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+#mapping-table tr:hover td {
+  background-color: #f9fbff;
+}
+
+/* Submit wrapper */
+.cwsc-woo-submit-wrapper {
+  text-align: right;
+  margin-top: 25px;
+}
+
+.cwsc-woo-submit-wrapper .button-primary.large {
+  background-color: #2271b1;
+  border-color: #2271b1;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 22px;
+}
+
+.cwsc-woo-submit-wrapper .button-primary.large:hover {
+  background-color: #1e63a0;
+  transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cwsc-woo-setting {
     padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 1px rgba(0,0,0,.04);
-}
-
-.cwsc-card h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-}
-
-/* Help text */
-.help-text {
-    font-size: 12px;
-    color: #666;
-    font-style: italic;
-    margin-top: 5px;
-}
-
-/* Success/Error messages */
-.cwsc-message {
-    padding: 10px 15px;
-    border-radius: 3px;
-    margin: 15px 0;
-}
-
-.cwsc-message.success {
-    background-color: #d4edda;
-    border: 1px solid #c3e6cb;
-    color: #155724;
-}
-
-.cwsc-message.error {
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    color: #721c24;
-}
-
-.cwsc-message.warning {
-    background-color: #fff3cd;
-    border: 1px solid #ffeaa7;
-    color: #856404;
-}
-
-.cwsc-message.info {
-    background-color: #d1ecf1;
-    border: 1px solid #bee5eb;
-    color: #0c5460;
+  }
+  .cwsc-woo-section {
+    padding: 15px;
+  }
+  #mapping-table th,
+  #mapping-table td {
+    display: block;
+    width: 100%;
+  }
 }

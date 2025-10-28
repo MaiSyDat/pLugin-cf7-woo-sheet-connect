@@ -1,16 +1,21 @@
 jQuery(document).ready(function($) {
     'use strict';
 
-    // Khi người dùng thay đổi form CF7 trong dropdown
+    // When the user changes the selected CF7 form in the dropdown
     $('#cf7_form_id').on('change', function() {
         var formId = $(this).val();
         var mappingContainer = $('#mapping-container');
         
         if (formId) {
-            // Show mapping
-            mappingContainer.show();
+            // Show mapping section
+            mappingContainer.removeClass('hidden');
             
-            // Lấy danh sách các field của form này
+            // Reset all mapped selects to default to avoid stale data
+            $('.cf7-field-select').each(function() {
+                $(this).val('');
+            });
+            
+            // Fetch the list of CF7 fields for the selected form
             $.ajax({
                 url: cwsc_woo_ajax.ajax_url,
                 type: 'POST',
@@ -20,20 +25,19 @@ jQuery(document).ready(function($) {
                 },
                 success: function(response) {
                     if (response.success && response.data.fields.length > 0) {
-                        // Tạo danh sách option cho select box
-                        var options = '<option value="">-- Chọn field CF7 --</option>';
+                        // Build the select options list
+                        var options = '<option value="">-- Select CF7 Field --</option>';
                         $.each(response.data.fields, function(index, field) {
                             options += '<option value="' + field.name + '">' + field.label + '</option>';
                         });
                         
-                        // Cập nhật tất cả các select box trong bảng mapping
+                        // Update all mapping select boxes
                         $('.cf7-field-select').each(function() {
-                            var currentValue = $(this).val();
-                            $(this).html(options);
-                            if (currentValue) {
-                                $(this).val(currentValue);
-                            }
+                            $(this).html(options).val(''); // reset value
                         });
+
+                        // Hide duplicate options (ensure consistency)
+                        updateFieldVisibility();
                     } else {
                         var options = '<option value="">' + cwsc_woo_ajax.strings.no_fields + '</option>';
                         $('.cf7-field-select').html(options);
@@ -45,40 +49,23 @@ jQuery(document).ready(function($) {
                 }
             });
         } else {
-            // Hiden mapping
-            mappingContainer.hide();
+            // Hide mapping section if no form selected
+            mappingContainer.addClass('hidden');
         }
     });
 
-    // Khởi tạo nếu biểu mẫu đã được chọn
+    // Initialize if a form is already selected on page load
     if ($('#cf7_form_id').val()) {
-        // Lưu trữ các giá trị hiện tại trước khi tải các tùy chọn mới
-        var currentValues = {};
-        $('.cf7-field-select').each(function() {
-            var name = $(this).attr('name');
-            var value = $(this).val();
-            if (value) {
-                currentValues[name] = value;
-            }
-        });
-        
-        $('#cf7_form_id').trigger('change');
-        
-        // Khôi phục giá trị sau khi tải
-        setTimeout(function() {
-            $.each(currentValues, function(name, value) {
-                $('select[name="' + name + '"]').val(value);
-            });
-            // Ẩn các field đã được chọn
-            updateFieldVisibility();
-        }, 1000);
+        // Ensure visibility state and hide duplicate fields on first load
+        $('#mapping-container').removeClass('hidden');
+        updateFieldVisibility();
     }
 
-    // Hàm ẩn các field CF7 đã được chọn
+    // Function to hide CF7 fields that are already selected elsewhere
     function updateFieldVisibility() {
         var selectedValues = [];
         
-        // Thu thập tất cả các giá trị đã được chọn
+        // Collect all selected CF7 field values
         $('.cf7-field-select').each(function() {
             var val = $(this).val();
             if (val && val !== '') {
@@ -86,7 +73,7 @@ jQuery(document).ready(function($) {
             }
         });
         
-        // Cập nhật tất cả các select box
+        // Update each select box to hide duplicates
         $('.cf7-field-select').each(function() {
             var currentVal = $(this).val();
             var $options = $(this).find('option');
@@ -95,7 +82,7 @@ jQuery(document).ready(function($) {
                 var $option = $(this);
                 var optionVal = $option.val();
                 
-                // Ẩn option nếu nó đã được chọn trong select box khác
+                // Hide the option if it’s already selected in another dropdown
                 if (optionVal && optionVal !== currentVal && selectedValues.indexOf(optionVal) !== -1) {
                     $option.hide();
                 } else {
@@ -105,9 +92,9 @@ jQuery(document).ready(function($) {
         });
     }
 
-    // Khi người dùng thay đổi selection trong mapping
+    // When the user changes any mapping selection
     $(document).on('change', '.cf7-field-select', function() {
-        // Cập nhật lại visibility của tất cả options
+        // Refresh visibility across all dropdowns
         updateFieldVisibility();
     });
 });

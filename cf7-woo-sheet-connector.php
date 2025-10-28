@@ -64,6 +64,9 @@ class CF7_Sheet_Connector {
 
         // init components
         $this->init_components();
+
+        // Enqueue admin assets centrally
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
     }
 
     /**
@@ -95,7 +98,7 @@ class CF7_Sheet_Connector {
      */
     private function include_files() {
         require_once CWSC_PLUGIN_DIR . 'includes/class-cwsc-google-client.php';
-        require_once CWSC_PLUGIN_DIR . 'includes/helpers.php';
+        require_once CWSC_PLUGIN_DIR . 'helpers.php';
         require_once CWSC_PLUGIN_DIR . 'includes/class-cwsc-admin.php';
         require_once CWSC_PLUGIN_DIR . 'includes/class-cwsc-cf7.php';
         require_once CWSC_PLUGIN_DIR . 'includes/class-cwsc-woocommerce.php';
@@ -116,6 +119,25 @@ class CF7_Sheet_Connector {
         // Initialize WooCommerce integration
         if ( class_exists( 'WooCommerce' ) ) {
             new CWSC_WooCommerce();
+        }
+    }
+
+    /**
+     * Enqueue admin stylesheet for our plugin screens (centralized)
+     */
+    public function enqueue_admin_assets( $hook ) {
+        if ( !function_exists( 'get_current_screen' ) ) {
+            return;
+        }
+        $screen = get_current_screen();
+
+        $is_admin_settings = ( $hook === 'settings_page_cwsc-settings' );
+        $is_woo_page = ( $hook === 'woocommerce_page_cwsc-woo-sheet' );
+        $is_cf7 = ( $screen && isset( $screen->post_type ) && $screen->post_type === 'wpcf7_contact_form' )
+            || ( is_string( $hook ) && strpos( $hook, 'wpcf7' ) !== false );
+
+        if ( $is_admin_settings || $is_woo_page || $is_cf7 ) {
+            wp_enqueue_style( 'cwsc-admin', CWSC_PLUGIN_URL . 'assets/css/admin.css', array(), CWSC_VERSION );
         }
     }
 

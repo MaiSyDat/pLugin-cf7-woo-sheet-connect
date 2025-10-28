@@ -19,13 +19,13 @@ class CWSC_Google_Client {
     }
 
     /**
-     * Load Google API và tạo kết nối
+     * Load Google API and create connection
      */
     private function init_client() {
         try {
             // Check if Google API library exists
             if ( !file_exists( CWSC_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
-                throw new Exception( 'Không tìm thấy thư viện Google API. Vui lòng chạy lệnh composer install trong thư mục /wp-content/plugins/cf7-woo-sheet-connector' );
+                throw new Exception( 'Google API library not found. Please run composer install in /wp-content/plugins/cf7-woo-sheet-connector directory' );
             }
 
             require_once CWSC_PLUGIN_DIR . 'vendor/autoload.php';
@@ -46,59 +46,59 @@ class CWSC_Google_Client {
     }
 
     /**
-     * Xác thực bằng JSON service account
+     * Authenticate with JSON service account
      */
     private function set_authentication() {
         $service_account = isset( $this->settings[ 'google_service_account' ] ) ? $this->settings[ 'google_service_account' ] : '';
 
         if ( empty( $service_account ) ) {
-            throw new Exception( 'Chưa cấu hình thông tin đăng nhập Tài khoản dịch vụ Google.' );
+            throw new Exception( 'Google Service Account credentials not configured.' );
         }
 
         // Decode and set credentials
         $credentials = json_decode( $service_account, true );
         if ( json_last_error() !== JSON_ERROR_NONE ) {
-            throw new Exception( 'Định dạng JSON của Tài khoản dịch vụ Google không hợp lệ.' );
+            throw new Exception( 'The Google Account Service JSON format is invalid.' );
         }
 
         $this->client->setAuthConfig( $credentials );
     }
 
     /**
-     * kiểm tra kết nối Google API
+     * test google api connection
      */
     public function test_connection() {
         try {
             // Test if we can create a client and authenticate
             if ( !$this->client || !$this->service ) {
-                return array( 'success' => false, 'message' => 'Không thể khởi tạo ứng dụng khách Google API' );
+                return array( 'success' => false, 'message' => 'Unable to initialize Google API client' );
             }
             
             // Try to get access token to test authentication
             $accessToken = $this->client->getAccessToken();
             
             if ( !$accessToken ) {
-                // Thử lấy token bằng xác thực service account
+                // Try to get token using service account authentication
                 $this->client->fetchAccessTokenWithAssertion();
                 $accessToken = $this->client->getAccessToken();
             }
             
             if ( !$accessToken ) {
-                return array( 'success' => false, 'message' => 'Không thể lấy access token. Vui lòng kiểm tra thông tin tài khoản dịch vụ Google.' );
+                return array( 'success' => false, 'message' => 'Unable to get access token. Please check your Google account service information.' );
             }
             
-            return array( 'success' => true, 'message' => 'Kết nối thành công - Xác thực Google API hoạt động' );
+            return array( 'success' => true, 'message' => 'Connection successful - Google API authentication working' );
             
         } catch ( Exception $e ) {
             $error_message = $e->getMessage();
             
             // Provide more specific error messages
             if ( strpos( $error_message, 'invalid_grant' ) !== false ) {
-                $error_message = 'Thông tin tài khoản dịch vụ không hợp lệ. Vui lòng kiểm tra file JSON.';
+                $error_message = 'Invalid service account information. Please check JSON file.';
             } elseif ( strpos( $error_message, 'access_denied' ) !== false ) {
-                $error_message = 'Từ chối truy cập. Hãy đảm bảo đã bật Google Sheets API và tài khoản dịch vụ có quyền phù hợp.';
+                $error_message = 'Access denied. Make sure the Google Sheets API is enabled and the service account has the appropriate permissions.';
             } elseif ( strpos( $error_message, 'not found' ) !== false ) {
-                $error_message = 'Không tìm thấy tài khoản dịch vụ. Vui lòng kiểm tra thông tin JSON.';
+                $error_message = 'Service account not found. Please check JSON information.';
             }
             
             return array( 'success' => false, 'message' => $error_message );
@@ -106,24 +106,24 @@ class CWSC_Google_Client {
     }
 
     /**
-     * Thêm một dòng vào Google Sheet
+     * Add a row to Google Sheet
      */
     public function append_row( $spreadsheet_id, $sheet_name, $data_array ) {
         try {
             if ( empty( $spreadsheet_id ) || empty( $sheet_name ) || empty( $data_array ) ) {
-                throw new Exception('Thiếu các tham số cần thiết để thêm dữ liệu.');
+                throw new Exception('Missing parameters required to add data.');
             }
 
-            // Đảm bảo headers tồn tại trước
+            // Make sure headers exist first
             $this->ensure_headers_exist( $spreadsheet_id, $sheet_name, array_keys( $data_array ) );
 
-            // Lấy headers hiện tại để sắp xếp dữ liệu đúng cột
+            // Get the current title to sort the column with the correct data
             $headers = $this->get_sheet_headers( $spreadsheet_id, $sheet_name );
             if ( empty( $headers ) ) {
                 $headers = array_keys( $data_array );
             }
 
-            // Sắp xếp giá trị theo thứ tự headers
+            // Sort values in headers order
             $rowValues = array();
             foreach ( $headers as $header ) {
                 $rowValues[] = isset( $data_array[ $header ] ) ? ( string ) $data_array[ $header ] : '';
@@ -139,11 +139,11 @@ class CWSC_Google_Client {
                 'insertDataOption'  => 'INSERT_ROWS'
             ];
 
-            // Sử dụng range đầy đủ để đảm bảo ghi đúng sheet
+            // Use full range to ensure correct sheet is written
             $range = $sheet_name . '!A1';
             $result = $this->service->spreadsheets_values->append( $spreadsheet_id, $range, $body, $params );
 
-            // Log lại số dòng cập nhật nếu có
+            // Log the number of updated lines if any
             $updates = method_exists( $result, 'getUpdates' ) ? $result->getUpdates() : null;
             $updatedRows = $updates && method_exists( $updates, 'getUpdatedRows' ) ? ( int ) $updates->getUpdatedRows() : null;
             $updatedRange = $updates && method_exists( $updates, 'getUpdatedRange' ) ? ( string ) $updates->getUpdatedRange() : '';
@@ -151,13 +151,13 @@ class CWSC_Google_Client {
             if ( $updatedRows === 0 ) {
                 return array(
                     'success' => false,
-                    'message' => 'Google API trả về 0 hàng đã cập nhật. Kiểm tra quyền của trang tính và tên trang tính.'
+                    'message' => 'Google API returned 0 updated rows. Check sheet permissions and sheet name.'
                 );
             }
 
             return array(
                 'success' => true,
-                'message' => 'Dữ liệu đã được gửi thành công lên Google Sheet',
+                'message' => 'Data has been successfully sent to Google Sheet',
                 'updated_rows' => $updatedRows,
                 'updated_range' => $updatedRange
             );
@@ -165,13 +165,13 @@ class CWSC_Google_Client {
         } catch ( Exception $e ) {
             return array(
                 'success' => false,
-                'message' => 'Không thể gửi dữ liệu lên Google Sheet: ' . $e->getMessage()
+                'message' => 'Unable to upload data to Google Sheet: ' . $e->getMessage()
             );
         }
     }
 
     /**
-     * lấy dòng tiêu đề (first row)
+     * get row header (first row)
      */
     public function get_sheet_headers( $spreadsheet_id, $sheet_name ) {
         try {
@@ -190,7 +190,7 @@ class CWSC_Google_Client {
     }
 
     /**
-     * kiểm tra quyền truy cập
+     *check access rights
      */
     public function validate_sheet_access( $spreadsheet_id, $sheet_name ) {
         try {
@@ -199,27 +199,27 @@ class CWSC_Google_Client {
 
             foreach ( $sheets as $sheet ) {
                 if ( $sheet->getProperties()->getTitle() === $sheet_name ) {
-                    return array( 'success' => true, 'message' => 'Đã xác thực quyền truy cập trang tính' );
+                    return array( 'success' => true, 'message' => 'Worksheet access authenticated' );
                 }
             }
 
-            return array( 'success' => false, 'message' => 'Không tìm thấy tên trang tính trong bảng tính' );
+            return array( 'success' => false, 'message' => 'Worksheet name not found in spreadsheet' );
         } catch ( Exception $e ) {
             return array( 'success' => false, 'message' => $e->getMessage() );
         }
     }
 
     /**
-     * Đảm bảo headers tồn tại trong sheet
+     * Make sure headers exist in the sheet
      */
     private function ensure_headers_exist( $spreadsheet_id, $sheet_name, $field_names ) {
         try {
-            // Kiểm tra xem dòng đầu tiên có dữ liệu chưa
+           // Check if the first line has data
             $range = $sheet_name . '!1:1';
             $response = $this->service->spreadsheets_values->get( $spreadsheet_id, $range );
             $existing_headers = $response->getValues();
             
-            // Nếu chưa có headers, thêm vào
+           // If headers don't exist, add them
             if ( empty( $existing_headers ) || empty( $existing_headers[0] ) ) {
                 $headers_body = new Google_Service_Sheets_ValueRange([
                     'values' => array( $field_names )
@@ -242,7 +242,7 @@ class CWSC_Google_Client {
     }
 
     /**
-     * Lấy thông tin spreadsheet
+     * Get spreadsheet information
      */
     public function get_spreadsheet_info( $spreadsheet_id ) {
         try {

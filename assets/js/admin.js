@@ -1,16 +1,16 @@
 jQuery(document).ready(function($) {
     
-    // Xử lý nút kiểm tra kết nối gg
+    // Handle the "Test Connection" button for Google API
     $('#test-connection').on('click', function() {
         var button = $(this);
         var statusSpan = $('#connection-status');
         var originalText = button.text();
         
-        // Khi người dùng bấm hiển thị trạng thái đang kiểm tra
+        // When the user clicks, show "Testing..." state
         button.prop('disabled', true).text(cwsc_ajax.strings.testing_connection);
         statusSpan.html('');
         
-        // Gửi AJAX tới server để test kết nối với Google API
+        // Send AJAX request to the server to test connection with Google API
         $.ajax({
             url: cwsc_ajax.ajax_url,
             type: 'POST',
@@ -32,25 +32,25 @@ jQuery(document).ready(function($) {
                 statusSpan.html('<span style="color: red;">' + cwsc_ajax.strings.connection_failed + '</span>');
             },
             complete: function() {
-                // Bật lại nút
+                // Re-enable button after testing is complete
                 button.prop('disabled', false).text(originalText);
             }
         });
     });
     
 
-    // Form validation
+    // Form validation before submission
     $('form').on('submit', function(e) {
         var spreadsheetId = $('#cwsc_spreadsheet_id').val();
         var sheetName = $('#cwsc_sheet_name').val();
         
-        // Kiểm tra định dạng Spreadsheet ID
+        // Validate Google Spreadsheet ID format
         if (spreadsheetId && !isValidSpreadsheetId(spreadsheetId)) {
             e.preventDefault();
             return false;
         }
         
-        // Kiểm tra định dạng Sheet Name
+        // Validate Sheet Name format
         if (sheetName && !isValidSheetName(sheetName)) {
             e.preventDefault();
             return false;
@@ -64,11 +64,11 @@ jQuery(document).ready(function($) {
     }
     
     function isValidSheetName(name) {
-        // Sheet names cannot contain certain characters
+        // Sheet names cannot contain certain special characters
         return !(/[\\\/\?\*\[\]]/.test(name)) && name.length > 0;
     }
     
-    // Copy to clipboard functionality for spreadsheet ID
+    // Copy the Spreadsheet ID to clipboard
     $('.copy-spreadsheet-id').on('click', function() {
         var id = $(this).data('id');
         navigator.clipboard.writeText(id);

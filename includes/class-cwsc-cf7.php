@@ -47,53 +47,53 @@ class CWSC_CF7 {
         $global_settings = cwsc_get_settings();
         $has_credentials = !empty( $global_settings['google_service_account'] );
         ?>
-        <h2><?php _e('Google Sheets Integration', 'cf7-woo-sheet-connector'); ?></h2>
-
-        <!-- form setting -->
-        <fieldset>
-            <legend><?php _e( 'Google Sheets settings', 'cf7-woo-sheet-connector' ); ?></legend>
-            
-            <table class="form-table">
-                <tr>
-                    <th scope="row">
-                        <label for="cwsc_enabled"><?php _e( 'Activate Google Sheets', 'cf7-woo-sheet-connector' ); ?></label>
-                    </th>
-                    <td>
-                        <input type="checkbox" id="cwsc_enabled" name="cwsc_enabled" value="1" <?php checked( $settings['enabled'] ); ?>>
-                        <label for="cwsc_enabled"><?php _e( 'Send form data to Google Sheets', 'cf7-woo-sheet-connector' ); ?></label>
-                    </td>
-                </tr>
+        <div class="cwsc-sheet-cf7-setting">
+            <!-- form setting -->
+            <fieldset>
+                <legend><?php _e( 'Google Sheets settings', 'cf7-woo-sheet-connector' ); ?></legend>
                 
-                <tr class="cwsc-settings" <?php echo !$settings[ 'enabled' ] ? 'style="display:none;"' : ''; ?>>
-                    <th scope="row">
-                        <label for="cwsc_spreadsheet_id"><?php _e( 'ID Google Sheet', 'cf7-woo-sheet-connector' ); ?></label>
-                    </th>
-                    <td>
-                        <input type="text" id="cwsc_spreadsheet_id" name="cwsc_spreadsheet_id" value="<?php echo esc_attr( $settings[ 'spreadsheet_id' ] ); ?>" class="large-text">
-                        <p class="description">
-                            <?php _e( 'Google Sheet ID from URL. Example: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms', 'cf7-woo-sheet-connector' ); ?>
-                        </p>
-                        <?php if (!empty($settings['spreadsheet_id'])): ?>
-                            <p>
-                                <a href="<?php echo esc_url( 'https://docs.google.com/spreadsheets/d/' . $settings['spreadsheet_id'] ); ?>" target="_blank" class="button button-secondary">
-                                    <?php _e( 'Xem Google Sheet', 'cf7-woo-sheet-connector' ); ?>
-                                </a>
+                <table class="form-table cwsc-form-table">
+                    <tr>
+                        <th scope="row">
+                            <label for="cwsc_enabled"><?php _e( 'Activate Google Sheets', 'cf7-woo-sheet-connector' ); ?></label>
+                        </th>
+                        <td>
+                            <input type="checkbox" id="cwsc_enabled" name="cwsc_enabled" value="1" <?php checked( $settings['enabled'] ); ?>>
+                            <label for="cwsc_enabled"><?php _e( 'Send form data to Google Sheets', 'cf7-woo-sheet-connector' ); ?></label>
+                        </td>
+                    </tr>
+                    
+                    <tr class="cwsc-settings" <?php echo !$settings[ 'enabled' ] ? 'style="display:none;"' : ''; ?>>
+                        <th scope="row">
+                            <label for="cwsc_spreadsheet_id"><?php _e( 'ID Google Sheet', 'cf7-woo-sheet-connector' ); ?></label>
+                        </th>
+                        <td>
+                            <input type="text" id="cwsc_spreadsheet_id" name="cwsc_spreadsheet_id" value="<?php echo esc_attr( $settings[ 'spreadsheet_id' ] ); ?>" class="large-text">
+                            <p class="description">
+                                <?php _e( 'Google Sheet ID from URL. Example: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms', 'cf7-woo-sheet-connector' ); ?>
                             </p>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                
-                <tr class="cwsc-settings" <?php echo !$settings[ 'enabled' ] ? 'style="display:none;"' : ''; ?>>
-                    <th scope="row">
-                        <label for="cwsc_sheet_name"><?php _e( 'Sheet name', 'cf7-woo-sheet-connector' ); ?></label>
-                    </th>
-                    <td>
-                        <input type="text" id="cwsc_sheet_name" name="cwsc_sheet_name" value="<?php echo esc_attr($settings['sheet_name']); ?>" class="regular-text">
-                        <p class="description"><?php _e( 'Name of the sheet/tab in Google Sheets (default: Sheet1)', 'cf7-woo-sheet-connector' ); ?></p>
-                    </td>
-                </tr>
-            </table>
-        </fieldset>
+                            <?php if (!empty($settings['spreadsheet_id'])): ?>
+                                <p>
+                                    <a href="<?php echo esc_url( 'https://docs.google.com/spreadsheets/d/' . $settings['spreadsheet_id'] ); ?>" target="_blank" class="button button-secondary">
+                                        <?php _e( 'Xem Google Sheet', 'cf7-woo-sheet-connector' ); ?>
+                                    </a>
+                                </p>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    
+                    <tr class="cwsc-settings" <?php echo !$settings[ 'enabled' ] ? 'style="display:none;"' : ''; ?>>
+                        <th scope="row">
+                            <label for="cwsc_sheet_name"><?php _e( 'Sheet name', 'cf7-woo-sheet-connector' ); ?></label>
+                        </th>
+                        <td>
+                            <input type="text" id="cwsc_sheet_name" name="cwsc_sheet_name" value="<?php echo esc_attr($settings['sheet_name']); ?>" class="regular-text">
+                            <p class="description"><?php _e( 'Name of the sheet/tab in Google Sheets (default: Sheet1)', 'cf7-woo-sheet-connector' ); ?></p>
+                        </td>
+                    </tr>
+                </table>
+            </fieldset>
+        </div>
         <?php
     }
 
@@ -194,7 +194,7 @@ class CWSC_CF7 {
         // Add helpful metadata columns only if not already present in form data
         $metadata_fields = array(
             'submit-time' => cwsc_get_current_timestamp(),
-            'customer-source' => cwsc_get_referrer(),
+            'customer-source' => cwsc_get_referrer_source(),
             'order-link' => cwsc_get_current_url(),
             'buy-link' => cwsc_get_current_url()
         );

@@ -48,7 +48,6 @@ class CWSC_Admin {
         }
 
         wp_enqueue_script( 'cwsc-admin', CWSC_PLUGIN_URL . 'assets/js/admin.js', array( 'jquery' ), CWSC_VERSION, true );
-        wp_enqueue_style( 'cwsc-admin', CWSC_PLUGIN_URL . 'assets/css/admin.css', array(), CWSC_VERSION );
 
         wp_localize_script( 'cwsc-admin', 'cwsc_ajax', array(
             'ajax_url' => admin_url( 'admin-ajax.php' ),
@@ -67,7 +66,7 @@ class CWSC_Admin {
     public function settings_page() {
         $settings = cwsc_get_settings();
         ?>
-        <div class="wrap">
+        <div class="wrap cwsc-admin-setting">
             <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
             
             <form method="post" action="options.php">
@@ -76,7 +75,7 @@ class CWSC_Admin {
                 do_settings_sections( 'cwsc_settings' );
                 ?>
                 
-                <table class="form-table">
+                <table class="form-table cwsc-form-table">
                     <tr>
                         <th scope="row">
                             <label for="google_service_account"><?php _e( 'Google Service Account', 'cf7-woo-sheet-connector' ); ?></label>
@@ -93,7 +92,7 @@ class CWSC_Admin {
                     <!-- Check connection -->
                     <tr>
                         <th scope="row"><?php _e( 'Check connection', 'cf7-woo-sheet-connector' ); ?></th>
-                        <td>
+                        <td class="test-connection-wrap">
                             <button type="button" id="test-connection" class="button button-secondary">
                                 <?php _e( 'Check connection', 'cf7-woo-sheet-connector' ); ?>
                             </button>
