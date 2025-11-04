@@ -170,56 +170,118 @@
         var initialUrl = getInitialUrl();
         var initialReferrer = getInitialReferrer();
         var urlParams = new URLSearchParams((initialUrl.split('?')[1] || ''));
-        var ref = (initialReferrer || '').toLowerCase(); // Only use initial referrer, not current document.referrer
         var ua = (navigator.userAgent || '').toLowerCase();
         var lowerUrl = initialUrl.toLowerCase();
+        
+        function getHost(u) {
+            try { return new URL(u).hostname.toLowerCase(); } catch (e) { return ''; }
+        }
+        var initialHost = getHost(initialUrl);
+        var refHost = getHost(initialReferrer);
 
-        var utmSource = urlParams.get('utm_source') || '';
+        var utmSource = (urlParams.get('utm_source') || '').toLowerCase();
 
-        // Priority 1: UTM source parameter
-        if (urlParams.has('utm_source')) {
-            var utmValue = urlParams.get('utm_source').toLowerCase();
-            if (utmValue.indexOf('facebook') !== -1) {
-                return 'Quảng Cáo Facebook';
+        // Priority 1: UTM source parameter (treat as Ads for known platforms)
+        if (utmSource) {
+            if (utmSource.indexOf('facebook') !== -1 || utmSource.indexOf('instagram') !== -1) {
+                return (utmSource.indexOf('instagram') !== -1) ? 'Quảng Cáo Instagram' : 'Quảng Cáo Facebook';
             }
-            if (utmValue.indexOf('google') !== -1) {
+            if (utmSource.indexOf('google') !== -1) {
                 return 'Quảng Cáo Google';
             }
-            if (utmValue.indexOf('zalo') !== -1) {
-                return 'Quảng Cáo Zalo';
-            }
-            if (utmValue.indexOf('tiktok') !== -1) {
+            if (utmSource.indexOf('tiktok') !== -1) {
                 return 'Quảng Cáo TikTok';
             }
+            if (utmSource.indexOf('zalo') !== -1) {
+                return 'Quảng Cáo Zalo';
+            }
+            if (utmSource.indexOf('twitter') !== -1 || utmSource.indexOf('x.com') !== -1 || utmSource.indexOf('x') !== -1) {
+                return 'Quảng Cáo X';
+            }
+            if (utmSource.indexOf('bing') !== -1) {
+                return 'Quảng Cáo Bing';
+            }
+            // Unknown paid source → return the raw utm_source
             return urlParams.get('utm_source');
         }
 
-        // Priority 2: Facebook Ads (fbclid)
+        // Priority 2: Ad click identifiers
+        // Facebook/Instagram Ads: fbclid → if ref/host suggests instagram, label Instagram; else Facebook
         if (lowerUrl.indexOf('fbclid') !== -1 || urlParams.has('fbclid')) {
+            if (initialHost.indexOf('instagram.com') !== -1 || refHost.indexOf('instagram.com') !== -1) {
+                return 'Quảng Cáo Instagram';
+            }
             return 'Quảng Cáo Facebook';
         }
-        // Facebook organic/app
-        if (initialUrl.indexOf('facebook') !== -1 || ref.indexOf('facebook') !== -1 || ua.indexOf('facebook') !== -1) {
-            return 'Facebook';
-        }
-
-        // Priority 3: Google Ads (gclid)
+        // Google Ads
         if (lowerUrl.indexOf('gclid') !== -1 || urlParams.has('gclid')) {
             return 'Quảng Cáo Google';
         }
-        // Google SEO (srsltid or referrer from google)
-        if (lowerUrl.indexOf('srsltid') !== -1 || urlParams.has('srsltid') || ref.indexOf('google') !== -1) {
+        // Bing Ads
+        if (lowerUrl.indexOf('msclkid') !== -1 || urlParams.has('msclkid')) {
+            return 'Quảng Cáo Bing';
+        }
+        // TikTok Ads
+        if (lowerUrl.indexOf('ttclid') !== -1 || urlParams.has('ttclid')) {
+            return 'Quảng Cáo TikTok';
+        }
+        // X (Twitter) Ads
+        if (lowerUrl.indexOf('twclid') !== -1 || urlParams.has('twclid')) {
+            return 'Quảng Cáo X';
+        }
+
+        // Priority 3: Organic/Referral sources by known domains
+        // Google SEO
+        if (lowerUrl.indexOf('srsltid') !== -1 || urlParams.has('srsltid') || refHost.indexOf('google.') !== -1) {
             return 'SEO Google';
         }
-
-        // Priority 4: Zalo
-        if (initialUrl.indexOf('zalo') !== -1 || ref.indexOf('zalo') !== -1 || ua.indexOf('zalo') !== -1) {
+        // Instagram
+        if (initialHost.indexOf('instagram.com') !== -1 || refHost.indexOf('instagram.com') !== -1 || ua.indexOf('instagram') !== -1) {
+            return 'Instagram';
+        }
+        // X (Twitter)
+        if (initialHost.indexOf('x.com') !== -1 || refHost.indexOf('x.com') !== -1 || initialHost.indexOf('twitter.com') !== -1 || refHost.indexOf('twitter.com') !== -1 || initialHost.indexOf('t.co') !== -1 || refHost.indexOf('t.co') !== -1) {
+            return 'X';
+        }
+        // YouTube
+        if (initialHost.indexOf('youtube.com') !== -1 || refHost.indexOf('youtube.com') !== -1 || initialHost.indexOf('youtu.be') !== -1 || refHost.indexOf('youtu.be') !== -1) {
+            return 'YouTube';
+        }
+        // Zalo
+        if (initialHost.indexOf('zalo') !== -1 || refHost.indexOf('zalo') !== -1 || ua.indexOf('zalo') !== -1) {
             return 'Zalo';
         }
-
-        // Priority 5: TikTok
-        if (initialUrl.indexOf('tiktok') !== -1 || ref.indexOf('tiktok') !== -1 || ua.indexOf('tiktok') !== -1) {
+        // TikTok
+        if (initialHost.indexOf('tiktok.com') !== -1 || refHost.indexOf('tiktok.com') !== -1 || ua.indexOf('tiktok') !== -1) {
             return 'TikTok';
+        }
+        // Shopee
+        if (initialHost.indexOf('shopee.vn') !== -1 || refHost.indexOf('shopee.vn') !== -1) {
+            return 'Shopee';
+        }
+        // Lazada
+        if (initialHost.indexOf('lazada.vn') !== -1 || refHost.indexOf('lazada.vn') !== -1) {
+            return 'Lazada';
+        }
+        // Tiki
+        if (initialHost.indexOf('tiki.vn') !== -1 || refHost.indexOf('tiki.vn') !== -1) {
+            return 'Tiki';
+        }
+        // Sendo
+        if (initialHost.indexOf('sendo.vn') !== -1 || refHost.indexOf('sendo.vn') !== -1) {
+            return 'Sendo';
+        }
+        // Chợ Tốt
+        if (initialHost.indexOf('chotot.com') !== -1 || refHost.indexOf('chotot.com') !== -1) {
+            return 'Chợ Tốt';
+        }
+        // Cốc Cốc
+        if (initialHost.indexOf('coccoc.com') !== -1 || refHost.indexOf('coccoc.com') !== -1) {
+            return 'Cốc Cốc';
+        }
+        // Facebook (organic/app)
+        if (initialHost.indexOf('facebook.com') !== -1 || refHost.indexOf('facebook.com') !== -1 || ua.indexOf('facebook') !== -1) {
+            return 'Facebook';
         }
 
         return 'Trực Tiếp Trên Web';
