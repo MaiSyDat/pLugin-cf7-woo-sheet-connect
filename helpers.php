@@ -47,26 +47,6 @@ function cwsc_get_current_timestamp() {
 }
 
 /**
- * Get ip
- */
-function cwsc_get_customer_ip() {
-    $ip_keys = array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR');
-    
-    foreach ( $ip_keys as $key ) {
-        if ( array_key_exists( $key, $_SERVER ) === true ) {
-            foreach ( explode( ',', $_SERVER[ $key ] ) as $ip ) {
-                $ip = trim($ip);
-                if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) !== false) {
-                    return $ip;
-                }
-            }
-        }
-    }
-    
-    return isset( $_SERVER[ 'REMOTE_ADDR' ] ) ? $_SERVER[ 'REMOTE_ADDR' ] : '';
-}
-
-/**
  * Check if Google API library is available
  */
 function cwsc_is_google_api_available() {
@@ -74,71 +54,53 @@ function cwsc_is_google_api_available() {
 }
 
 /**
- * Get referrer URL
+ * Get customer source from cookie (set by JS)
  */
-function cwsc_get_referrer() {
-    return isset( $_SERVER[ 'HTTP_REFERER' ] ) ? $_SERVER[ 'HTTP_REFERER' ] : '';
+function cwsc_get_referrer_source() {
+    if ( isset( $_COOKIE['cwsc_customer_source'] ) ) {
+        return sanitize_text_field( $_COOKIE['cwsc_customer_source'] );
+    }
+    return 'Trực Tiếp Trên Web';
 }
 
 /**
- * Get referrer source name from URL
+ * Get initial URL from cookie (first URL user landed on in current session)
+ * Only uses cookie if session ID is present (set by JS for current session)
+ * Falls back to current URL if cookie not found or session ID missing (old cookie)
  */
-function cwsc_get_referrer_source() {
-    $referrer = cwsc_get_referrer();
-    
-    if ( empty( $referrer ) ) {
-        return '';
+function cwsc_get_initial_url() {
+    // Check cookie with session ID validation
+    if ( isset( $_COOKIE['cwsc_initial_url'] ) && !empty( $_COOKIE['cwsc_initial_url'] ) ) {
+        $cookie_session_id = isset( $_COOKIE['cwsc_session_id'] ) ? $_COOKIE['cwsc_session_id'] : '';
+        
+        $initial_url = esc_url_raw( $_COOKIE['cwsc_initial_url'] );
+        
+        // Only return if it's a valid URL
+        if ( filter_var( $initial_url, FILTER_VALIDATE_URL ) ) {
+            // Don't use thank you page or checkout as initial URL
+            if ( strpos( $initial_url, 'order-received' ) === false && strpos( $initial_url, 'checkout' ) === false ) {
+                // If no session ID in cookie, it's an old cookie from previous session - don't use it
+                if ( !empty( $cookie_session_id ) ) {
+                    return $initial_url;
+                }
+            }
+        }
     }
     
-    // Parse URL to get components
-    $url_parts = parse_url( $referrer );
-    $host = isset( $url_parts['host'] ) ? strtolower( $url_parts['host'] ) : '';
-    $query = isset( $url_parts['query'] ) ? $url_parts['query'] : '';
-    parse_str( $query, $query_params );
-    
-    // Check for Facebook source
-    if ( isset( $query_params['fbclid'] ) || strpos( $host, 'facebook.com' ) !== false ) {
-        return 'Facebook';
+    // Fallback: try to get from referrer if available (and not checkout)
+    $referrer = isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( $_SERVER['HTTP_REFERER'] ) : '';
+    if ( !empty( $referrer ) && strpos( $referrer, 'order-received' ) === false && strpos( $referrer, 'checkout' ) === false ) {
+        // Check if referrer is from same domain (not external)
+        $referrer_host = parse_url( $referrer, PHP_URL_HOST );
+        $current_host = isset( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : '';
+        if ( $referrer_host === $current_host || empty( $current_host ) ) {
+            return $referrer;
+        }
     }
     
-    // Check for TikTok source
-    if ( strpos( $query, 'ttclid' ) !== false || strpos( $host, 'tiktok.com' ) !== false ) {
-        return 'TikTok';
-    }
-    
-    // Check for Shopee source
-    if ( strpos( $host, 'shopee' ) !== false || isset( $query_params['utm_source'] ) && strpos( $query_params['utm_source'], 'shopee' ) !== false ) {
-        return 'Shopee';
-    }
-    
-    // Check for Zalo source
-    if ( strpos( $host, 'zalo' ) !== false || isset( $query_params['utm_source'] ) && strpos( $query_params['utm_source'], 'zalo' ) !== false ) {
-        return 'Zalo';
-    }
-    
-    // Check for Google source
-    if ( strpos( $host, 'google.com' ) !== false || isset( $query_params['gclid'] ) ) {
-        return 'Google';
-    }
-    
-    // Check for Instagram source
-    if ( strpos( $host, 'instagram.com' ) !== false ) {
-        return 'Instagram';
-    }
-    
-    // Check for UTM source parameter
-    if ( isset( $query_params['utm_source'] ) ) {
-        return ucfirst( $query_params['utm_source'] );
-    }
-    
-    // Check for referrer domain
-    if ( !empty( $host ) ) {
-        // Extract main domain (e.g., "example.com" from "www.example.com")
-        $domain = preg_replace( '/^www\./', '', $host );
-        return ucfirst( $domain );
-    }
-    
-    return $referrer;
+    // Final fallback to current URL (fresh session, no cookie)
+    global $wp;
+    return home_url( add_query_arg( array(), $wp->request ) );
 }
 
 /**

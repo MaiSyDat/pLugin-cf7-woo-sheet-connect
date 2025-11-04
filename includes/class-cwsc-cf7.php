@@ -192,11 +192,12 @@ class CWSC_CF7 {
         }
 
         // Add helpful metadata columns only if not already present in form data
+        // this is just fallback
         $metadata_fields = array(
             'submit-time' => cwsc_get_current_timestamp(),
             'customer-source' => cwsc_get_referrer_source(),
-            'order-link' => cwsc_get_current_url(),
-            'buy-link' => cwsc_get_current_url()
+            'order-link' => cwsc_get_initial_url(),
+            'buy-link' => cwsc_get_current_url() // For regular CF7 forms, use current page URL
         );
         
         foreach ($metadata_fields as $key => $value) {

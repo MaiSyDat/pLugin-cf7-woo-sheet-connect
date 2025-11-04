@@ -190,26 +190,6 @@ class CWSC_Google_Client {
     }
 
     /**
-     *check access rights
-     */
-    public function validate_sheet_access( $spreadsheet_id, $sheet_name ) {
-        try {
-            $spreadsheet = $this->service->spreadsheets->get( $spreadsheet_id );
-            $sheets = $spreadsheet->getSheets();
-
-            foreach ( $sheets as $sheet ) {
-                if ( $sheet->getProperties()->getTitle() === $sheet_name ) {
-                    return array( 'success' => true, 'message' => 'Worksheet access authenticated' );
-                }
-            }
-
-            return array( 'success' => false, 'message' => 'Worksheet name not found in spreadsheet' );
-        } catch ( Exception $e ) {
-            return array( 'success' => false, 'message' => $e->getMessage() );
-        }
-    }
-
-    /**
      * Make sure headers exist in the sheet
      */
     private function ensure_headers_exist( $spreadsheet_id, $sheet_name, $field_names ) {
@@ -238,29 +218,6 @@ class CWSC_Google_Client {
             }
         } catch ( Exception $e ) {
 
-        }
-    }
-
-    /**
-     * Get spreadsheet information
-     */
-    public function get_spreadsheet_info( $spreadsheet_id ) {
-        try {
-            $spreadsheet = $this->service->spreadsheets->get( $spreadsheet_id );
-            $sheets = $spreadsheet->getSheets();
-            $sheet_names = array();
-
-            foreach ( $sheets as $sheet ) {
-                $sheet_names[] = $sheet->getProperties()->getTitle();
-            }
-
-            return array(
-                'success' => true,
-                'title' => $spreadsheet->getProperties()->getTitle(),
-                'sheet_names' => $sheet_names
-            );
-        } catch ( Exception $e ) {
-            return array('success' => false, 'message' => $e->getMessage());
         }
     }
 }

@@ -67,6 +67,8 @@ class CF7_Sheet_Connector {
 
         // Enqueue admin assets centrally
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+        // Enqueue frontend assets
+        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_front_assets' ) );
     }
 
     /**
@@ -139,6 +141,38 @@ class CF7_Sheet_Connector {
         if ( $is_admin_settings || $is_woo_page || $is_cf7 ) {
             wp_enqueue_style( 'cwsc-admin', CWSC_PLUGIN_URL . 'assets/css/admin.css', array(), CWSC_VERSION );
         }
+    }
+
+    /**
+     * Enqueue frontend script to capture source, order-link and buy-link
+     */
+    public function enqueue_front_assets() {
+        // Load only on frontend
+        if ( is_admin() ) {
+            return;
+        }
+
+        wp_enqueue_script( 'cwsc-frontend', CWSC_PLUGIN_URL . 'assets/js/frontend.js', array(), CWSC_VERSION, true );
+
+        $localize = array(
+            'cart_links' => array(),
+        );
+
+        if ( class_exists( 'WooCommerce' ) && function_exists( 'WC' ) && WC()->cart ) {
+            $cart = WC()->cart->get_cart();
+            $links = array();
+            foreach ( $cart as $cart_item_key => $cart_item ) {
+                if ( ! empty( $cart_item['product_id'] ) ) {
+                    $permalink = get_permalink( $cart_item['product_id'] );
+                    if ( $permalink ) {
+                        $links[] = $permalink;
+                    }
+                }
+            }
+            $localize['cart_links'] = array_values( array_unique( $links ) );
+        }
+
+        wp_localize_script( 'cwsc-frontend', 'cwsc_frontend', $localize );
     }
 
     /**

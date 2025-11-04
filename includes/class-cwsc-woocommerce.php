@@ -15,7 +15,6 @@ class CWSC_WooCommerce {
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
         add_action( 'wp_ajax_cwsc_get_cf7_fields', array( $this, 'ajax_get_cf7_fields' ) );
         add_action( 'woocommerce_thankyou', array( $this, 'send_order_to_sheet' ), 10, 1 );
-        add_action( 'admin_init', array( $this, 'handle_form_submission' ) );
         add_action( 'admin_init', array( $this, 'save_mapping_settings' ) );
     }
 
@@ -42,27 +41,6 @@ class CWSC_WooCommerce {
      */
     public function register_woocommerce_settings() {
         register_setting( 'cwsc_woo_settings', 'woo_cf7_field_mapping', array( $this, 'sanitize_mapping_settings' ) );
-    }
-    
-    /**
-     * Handle form submit when user saves mapping configuration
-     */
-    public function handle_form_submission() {
-        if ( !current_user_can( 'manage_woocommerce' ) ) {
-            return;
-        }
-        
-        if ( isset( $_POST[ 'woo_cf7_field_mapping' ] ) && isset( $_POST[ 'option_page' ] ) && $_POST[ 'option_page' ] === 'cwsc_woo_settings' ) {
-            $mapping_data = $_POST[ 'woo_cf7_field_mapping' ];
-            $sanitized_data = $this->sanitize_mapping_settings( $mapping_data );
-            
-           // Save data to option
-            update_option( 'woo_cf7_field_mapping', $sanitized_data );
-            
-            // Redirect to avoid resubmission
-            wp_redirect( add_query_arg( array( 'page' => 'cwsc-woo-sheet', 'saved' => '1' ), admin_url( 'admin.php' ) ) );
-            exit;
-        }
     }
     
     /**
@@ -484,13 +462,33 @@ class CWSC_WooCommerce {
             }
         }
 
+        // Get product links from order items for buy-link
+        $buy_link = '';
+        $product_links = array();
+        foreach ( $order->get_items() as $item ) {
+            $product_id = $item->get_product_id();
+            if ( $product_id ) {
+                $permalink = get_permalink( $product_id );
+                if ( $permalink ) {
+                    $product_links[] = $permalink;
+                }
+            }
+        }
+        if ( !empty( $product_links ) ) {
+            $buy_link = implode( ', ', array_unique( $product_links ) );
+        }
+        
+        // If no product links, use current page URL
+        if ( empty( $buy_link ) ) {
+            $buy_link = cwsc_get_current_url();
+        }
+
         // Add general meta information
         $metadata_fields = array(
             'submit-time' => cwsc_get_current_timestamp(),
             'customer-source' => cwsc_get_referrer_source(),
-            'order-link' => cwsc_get_current_url(),
-            'buy-link' => cwsc_get_current_url(),
-            'source' => 'woocommerce',
+            'order-link' => cwsc_get_initial_url(), // Use initial URL from cookie
+            'buy-link' => $buy_link,
             'order_id' => $order->get_id(),
         );
         
