@@ -15,9 +15,9 @@
         "monolog/monolog": "^2.9"
     },
     "autoload": {
-        "psr-4": {
-            "CWSC\\": "includes/"
-        }
+        "classmap": [
+            "includes/"
+        ]
     },
     "scripts": {
         "post-install-cmd": [
