@@ -137,7 +137,18 @@
             // ignore
         }
         
-        // Fallback to current URL (don't use old cookie from previous session)
+        // Check cookie with session ID match
+        var sessionId = getSessionId();
+        var cookieSessionId = getCookie('cwsc_session_id');
+        var cookieUrl = getCookie('cwsc_initial_url');
+        
+        // Only use cookie if session ID matches (same browser session)
+        if (cookieSessionId === sessionId && cookieUrl) {
+            return cookieUrl;
+        }
+        
+        // If no initial URL found, return current URL (but this should rarely happen)
+        // This is only for first page load before initInitialUrl() runs
         return window.location.href;
     }
 
@@ -159,16 +170,32 @@
         var initialUrl = getInitialUrl();
         var initialReferrer = getInitialReferrer();
         var urlParams = new URLSearchParams((initialUrl.split('?')[1] || ''));
-        var ref = (initialReferrer || document.referrer || '').toLowerCase();
+        var ref = (initialReferrer || '').toLowerCase(); // Only use initial referrer, not current document.referrer
         var ua = (navigator.userAgent || '').toLowerCase();
         var lowerUrl = initialUrl.toLowerCase();
 
         var utmSource = urlParams.get('utm_source') || '';
 
-        if (urlParams.has('utm_source')) return urlParams.get('utm_source');
+        // Priority 1: UTM source parameter
+        if (urlParams.has('utm_source')) {
+            var utmValue = urlParams.get('utm_source').toLowerCase();
+            if (utmValue.indexOf('facebook') !== -1) {
+                return 'Quảng Cáo Facebook';
+            }
+            if (utmValue.indexOf('google') !== -1) {
+                return 'Quảng Cáo Google';
+            }
+            if (utmValue.indexOf('zalo') !== -1) {
+                return 'Quảng Cáo Zalo';
+            }
+            if (utmValue.indexOf('tiktok') !== -1) {
+                return 'Quảng Cáo TikTok';
+            }
+            return urlParams.get('utm_source');
+        }
 
-        // Facebook Ads
-        if (lowerUrl.indexOf('fbclid') !== -1 || urlParams.has('fbclid') || utmSource.indexOf('facebook') !== -1) {
+        // Priority 2: Facebook Ads (fbclid)
+        if (lowerUrl.indexOf('fbclid') !== -1 || urlParams.has('fbclid')) {
             return 'Quảng Cáo Facebook';
         }
         // Facebook organic/app
@@ -176,28 +203,22 @@
             return 'Facebook';
         }
 
-        // Google Ads
-        if (lowerUrl.indexOf('gclid') !== -1 || urlParams.has('gclid') || utmSource.indexOf('google') !== -1) {
+        // Priority 3: Google Ads (gclid)
+        if (lowerUrl.indexOf('gclid') !== -1 || urlParams.has('gclid')) {
             return 'Quảng Cáo Google';
         }
-        // Google SEO - check initial referrer from cookie/sessionStorage
+        // Google SEO (srsltid or referrer from google)
         if (lowerUrl.indexOf('srsltid') !== -1 || urlParams.has('srsltid') || ref.indexOf('google') !== -1) {
             return 'SEO Google';
         }
 
-        // Zalo
-        if (utmSource.indexOf('zalo') !== -1 || initialUrl.indexOf('zalo') !== -1 || ref.indexOf('zalo') !== -1 || ua.indexOf('zalo') !== -1) {
-            if (urlParams.has('utm_source')) {
-                return 'Quảng Cáo Zalo';
-            }
+        // Priority 4: Zalo
+        if (initialUrl.indexOf('zalo') !== -1 || ref.indexOf('zalo') !== -1 || ua.indexOf('zalo') !== -1) {
             return 'Zalo';
         }
 
-        // TikTok
-        if (utmSource.indexOf('tiktok') !== -1 || initialUrl.indexOf('tiktok') !== -1 || ref.indexOf('tiktok') !== -1 || ua.indexOf('tiktok') !== -1) {
-            if (urlParams.has('utm_source')) {
-                return 'Quảng Cáo TikTok';
-            }
+        // Priority 5: TikTok
+        if (initialUrl.indexOf('tiktok') !== -1 || ref.indexOf('tiktok') !== -1 || ua.indexOf('tiktok') !== -1) {
             return 'TikTok';
         }
 
@@ -225,12 +246,16 @@
     }
 
     function hydrateForms() {
+        // Ensure initial URL is set first
+        initInitialUrl();
+        
         var source = detectSource();
-        var orderLink = getInitialUrl();
+        var orderLink = getInitialUrl(); // Get fresh value after init
         var buyLink = getBuyLink();
 
         // Save to cookie for PHP to read
         setCookie('cwsc_customer_source', source, 1);
+        setCookie('cwsc_initial_url', orderLink, 1); // Update cookie with current initial URL
 
         // Target CF7 forms on the page
         var forms = document.querySelectorAll('.wpcf7 form');
@@ -245,15 +270,30 @@
         });
     }
 
-    // Initialize on page load
+    // Initialize on page load (run immediately)
     initInitialUrl();
 
-    // Initial run and on DOM ready
+    // Run hydrateForms when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', hydrateForms);
     } else {
         hydrateForms();
     }
+    
+    // Re-hydrate forms before submission (for CF7)
+    // Hook into CF7 before submit event
+    document.addEventListener('wpcf7beforesubmit', function() {
+        hydrateForms();
+    }, true);
+    
+    // Also hook into form submit events (fallback - update right before submit)
+    document.addEventListener('submit', function(e) {
+        var form = e.target;
+        if (form && (form.classList.contains('wpcf7-form') || form.closest('.wpcf7'))) {
+            // Update values right before submit (synchronously)
+            hydrateForms();
+        }
+    }, true);
 })();
 
 
