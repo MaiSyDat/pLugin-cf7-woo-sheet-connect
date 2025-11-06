@@ -100,6 +100,7 @@ class CWSC_Admin {
                         </td>
                     </tr>
                 </table>
+
                 <?php submit_button(); ?>
             </form>
         </div>
@@ -110,7 +111,9 @@ class CWSC_Admin {
      * Sanitize data before saving settings
      */
     public function sanitize_settings( $input ) {
-        $sanitized = array();
+        // Get existing settings to preserve other values
+        $existing = cwsc_get_settings();
+        $sanitized = $existing;
         
         // Sanitize Google Service Account JSON
         if ( isset( $input['google_service_account'] ) ) {
@@ -123,6 +126,9 @@ class CWSC_Admin {
                 } else {
                     add_settings_error( 'cwsc_settings', 'invalid_json', __( 'Invalid JSON format for Google Service Account.', 'cf7-woo-sheet-connector' ) );
                 }
+            } else {
+                // Allow clearing the field
+                $sanitized['google_service_account'] = '';
             }
         }
 

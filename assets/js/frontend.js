@@ -14,6 +14,17 @@
         document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/; SameSite=Lax';
     }
 
+    // Helper function to set permanent cookie (persists for 180 days by default)
+    function setCookiePermanent(name, value, days) {
+        var expires = '';
+        // Default to 180 days if not specified
+        var expiryDays = days !== null && days !== undefined ? days : 180;
+        var date = new Date();
+        date.setTime(date.getTime() + (expiryDays * 24 * 60 * 60 * 1000));
+        expires = '; expires=' + date.toUTCString();
+        document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/; SameSite=Lax';
+    }
+
     // Helper function to get cookie
     function getCookie(name) {
         var nameEQ = name + '=';
@@ -311,13 +322,34 @@
         // Ensure initial URL is set first
         initInitialUrl();
         
-        var source = detectSource();
-        var orderLink = getInitialUrl(); // Get fresh value after init
+        // Check if first visit data already exists (never overwrite)
+        var firstVisitSet = getCookie('cwsc_first_visit_set');
+        var firstVisitOrderLink = getCookie('cwsc_first_visit_order_link');
+        var firstVisitSource = getCookie('cwsc_first_visit_source');
+        
+        var orderLink;
+        var source;
+        
+        if (firstVisitSet && firstVisitOrderLink && firstVisitSource) {
+            // Already set - always use the first visit values (never change)
+            orderLink = firstVisitOrderLink;
+            source = firstVisitSource;
+        } else {
+            // First visit - detect and save permanently
+            orderLink = getInitialUrl();
+            source = detectSource();
+            
+            // Save permanently (180 days) - only set once
+            setCookiePermanent('cwsc_first_visit_order_link', orderLink);
+            setCookiePermanent('cwsc_first_visit_source', source);
+            setCookiePermanent('cwsc_first_visit_set', '1');
+        }
+        
         var buyLink = getBuyLink();
 
-        // Save to cookie for PHP to read
+        // Also save to temporary cookie for PHP to read (for current session)
         setCookie('cwsc_customer_source', source, 1);
-        setCookie('cwsc_initial_url', orderLink, 1); // Update cookie with current initial URL
+        setCookie('cwsc_initial_url', orderLink, 1);
 
         // Target CF7 forms on the page
         var forms = document.querySelectorAll('.wpcf7 form');

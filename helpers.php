@@ -54,9 +54,14 @@ function cwsc_is_google_api_available() {
 }
 
 /**
- * Get customer source from cookie (set by JS)
+ * Get customer source from cookie (permanent first visit value, never changes)
  */
 function cwsc_get_referrer_source() {
+    // Check permanent first visit cookie first (never changes after first visit)
+    if ( isset( $_COOKIE['cwsc_first_visit_source'] ) && !empty( $_COOKIE['cwsc_first_visit_source'] ) ) {
+        return sanitize_text_field( $_COOKIE['cwsc_first_visit_source'] );
+    }
+    // Fallback to temporary cookie (for backward compatibility)
     if ( isset( $_COOKIE['cwsc_customer_source'] ) ) {
         return sanitize_text_field( $_COOKIE['cwsc_customer_source'] );
     }
@@ -64,12 +69,23 @@ function cwsc_get_referrer_source() {
 }
 
 /**
- * Get initial URL from cookie (first URL user landed on in current session)
- * Only uses cookie if session ID is present (set by JS for current session)
- * Falls back to current URL if cookie not found or session ID missing (old cookie)
+ * Get initial URL from cookie (permanent first visit URL, never changes)
  */
 function cwsc_get_initial_url() {
-    // Check cookie with session ID validation
+    // Check permanent first visit cookie first (never changes after first visit)
+    if ( isset( $_COOKIE['cwsc_first_visit_order_link'] ) && !empty( $_COOKIE['cwsc_first_visit_order_link'] ) ) {
+        $initial_url = esc_url_raw( $_COOKIE['cwsc_first_visit_order_link'] );
+        
+        // Only return if it's a valid URL
+        if ( filter_var( $initial_url, FILTER_VALIDATE_URL ) ) {
+            // Don't use thank you page or checkout as initial URL
+            if ( strpos( $initial_url, 'order-received' ) === false && strpos( $initial_url, 'checkout' ) === false ) {
+                return $initial_url;
+            }
+        }
+    }
+    
+    // Fallback to temporary cookie (for backward compatibility)
     if ( isset( $_COOKIE['cwsc_initial_url'] ) && !empty( $_COOKIE['cwsc_initial_url'] ) ) {
         $cookie_session_id = isset( $_COOKIE['cwsc_session_id'] ) ? $_COOKIE['cwsc_session_id'] : '';
         
@@ -79,7 +95,7 @@ function cwsc_get_initial_url() {
         if ( filter_var( $initial_url, FILTER_VALIDATE_URL ) ) {
             // Don't use thank you page or checkout as initial URL
             if ( strpos( $initial_url, 'order-received' ) === false && strpos( $initial_url, 'checkout' ) === false ) {
-                // If no session ID in cookie, it's an old cookie from previous session - don't use it
+                // If session ID exists, use it
                 if ( !empty( $cookie_session_id ) ) {
                     return $initial_url;
                 }
@@ -98,7 +114,7 @@ function cwsc_get_initial_url() {
         }
     }
     
-    // Final fallback to current URL (fresh session, no cookie)
+    // Final fallback to current URL
     global $wp;
     return home_url( add_query_arg( array(), $wp->request ) );
 }

@@ -1,7 +1,7 @@
 # 🧩 CF7 & WooCommerce Google Sheet Connector
 
 **Author:** HUPUNA 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **License:** GPLv2+  
 **Tags:** contact form 7, woocommerce, google sheets, integration, forms, orders  
 **Requires WordPress:** 5.0+  
@@ -24,6 +24,8 @@ Plugin cho phép **tự động gửi dữ liệu đơn hàng và biểu mẫu l
 - 🧭 **Tùy chỉnh ánh xạ (mapping)** từng trường dữ liệu linh hoạt  
 - 🔒 **Sử dụng Google Service Account** để kết nối an toàn, không cần token người dùng  
 - ⚡ **Tự động ghi dữ liệu theo thời gian thực** khi có đơn hàng mới hoặc form mới  
+- 🎯 **Theo dõi nguồn khách hàng** tự động (UTM, referrer, Facebook, Google, Zalo, TikTok...)  
+- 🔗 **Lưu trữ link nguồn ban đầu** (order-link) và link mua hàng (buy-link) để phân tích marketing  
 - 🧩 **Tích hợp nhẹ, tương thích hoàn toàn với WordPress core**  
 
 ---
@@ -58,6 +60,26 @@ composer require google/apiclient:^2.15
 
 - Khi người dùng gửi form liên hệ qua Contact Form 7 → dữ liệu tự động ghi vào Google Sheets.  
 - Khi khách hàng đặt đơn hàng WooCommerce → thông tin khách hàng và đơn hàng lưu vào bảng sheet tương ứng.  
+- Hệ thống tự động theo dõi nguồn khách hàng (Google SEO, Facebook Ads, Zalo, TikTok...) và lưu link nguồn ban đầu để phân tích hiệu quả marketing.
+
+---
+
+## 🆕 Changelog
+
+### Version 1.1.0 (2025)
+
+**Cải tiến:**
+- 🎯 Cải thiện logic tracking nguồn khách hàng (customer-source) với nhiều nền tảng hơn
+- 🔗 Tối ưu hóa việc lưu trữ order-link và buy-link với persistent cookies (180 ngày)
+- 🐛 Sửa lỗi order-link không hiển thị đúng URL ban đầu cho WooCommerce orders
+
+### Version 1.0.0 (2025)
+
+- 🎉 Phiên bản đầu tiên
+- Kết nối Contact Form 7 với Google Sheets
+- Kết nối WooCommerce với Google Sheets
+- Tùy chỉnh mapping fields
+- Tracking nguồn khách hàng và link nguồn  
 
 ---
 

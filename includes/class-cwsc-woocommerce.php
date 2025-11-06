@@ -364,7 +364,7 @@ class CWSC_WooCommerce {
             );
 
             // Mark as sent only after a successful append
-            if ( $result ) {
+            if ( $result && isset( $result['success'] ) && $result['success'] ) {
                 $order->update_meta_data( '_cwsc_sent_to_sheet', 1 );
                 $order->save();
             }
