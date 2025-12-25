@@ -134,7 +134,7 @@ class CWSC_WooCommerce {
                 <p><?php _e( 'Sync your WooCommerce orders to Google Sheets automatically through Contact Form 7.', 'cf7-woo-sheet-connector' ); ?></p>
             </div>
             
-            <?php if ( isset( $_GET['saved'] ) && $_GET['saved'] == '1' ): ?>
+            <?php if ( isset( $_GET['saved'] ) && '1' === sanitize_text_field( $_GET['saved'] ) ): ?>
                 <div class="notice notice-success is-dismissible">
                     <p><strong><?php _e( 'Configuration saved successfully!', 'cf7-woo-sheet-connector' ); ?></strong></p>
                 </div>
@@ -265,11 +265,13 @@ class CWSC_WooCommerce {
      * AJAX processing to get the list of fields of CF7 form by ID
      */
     public function ajax_get_cf7_fields() {
+        check_ajax_referer( 'cwsc_woo_nonce', 'nonce' );
+        
         if ( !current_user_can( 'manage_woocommerce' ) ) {
             wp_send_json_error( array( 'message' => 'You do not have permission to access this page.' ) );
         }
 
-        $form_id = intval( $_POST['form_id'] );
+        $form_id = isset( $_POST['form_id'] ) ? intval( $_POST['form_id'] ) : 0;
         if ( empty( $form_id ) ) {
             wp_send_json_error( array( 'message' => 'Invalid form ID' ) );
         }

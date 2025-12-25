@@ -56,161 +56,145 @@
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
 
-    // Persist the very first landing URL and referrer in both sessionStorage and cookie
-    // This runs immediately when script loads, not waiting for DOM ready
-    function initInitialUrl() {
-        var initialUrl = null;
-        var initialReferrer = null;
+    /**
+     * Capture and persist First Visit data (Landing Page and Referrer Source).
+     * This runs IMMEDIATELY when script loads, before DOM ready.
+     * Uses First Touch Attribution - NEVER overwrites once set.
+     */
+    function captureFirstVisit() {
+        // Check if First Visit data already exists (never overwrite).
+        var firstVisitSet = getCookie('cwsc_first_visit_set');
+        var firstVisitOrderLink = getCookie('cwsc_first_visit_order_link');
+        var firstVisitSource = getCookie('cwsc_first_visit_source');
+
+        // If already set, do nothing (First Touch Attribution).
+        if (firstVisitSet && firstVisitOrderLink && firstVisitSource) {
+            return;
+        }
+
+        // This is the first visit - capture data immediately.
         var currentUrl = window.location.href;
         var currentReferrer = document.referrer || '';
         var isCheckoutPage = currentUrl.indexOf('checkout') !== -1 || currentUrl.indexOf('order-received') !== -1;
-        var sessionId = getSessionId();
-        
-        // First, check sessionStorage (this is the source of truth for current session)
-        try {
-            if (typeof window !== 'undefined' && window.sessionStorage) {
-                initialUrl = sessionStorage.getItem('cwsc_initial_url');
-                initialReferrer = sessionStorage.getItem('cwsc_initial_referrer');
-                if (initialUrl) {
-                    // If we have stored URL in sessionStorage, use it and update cookie with session ID
-                    setCookie('cwsc_initial_url', initialUrl, 1);
-                    setCookie('cwsc_session_id', sessionId, 1);
-                    if (initialReferrer) {
-                        setCookie('cwsc_initial_referrer', initialReferrer, 1);
-                    }
-                    return initialUrl;
-                }
-            }
-        } catch (e) {
-            // ignore storage errors
-        }
-        
-        // Check cookie ONLY if session ID matches (same session)
-        var cookieSessionId = getCookie('cwsc_session_id');
-        var cookieUrl = getCookie('cwsc_initial_url');
-        var cookieReferrer = getCookie('cwsc_initial_referrer');
-        
-        // Only use cookie if session ID matches (same browser session)
-        if (cookieSessionId === sessionId && cookieUrl && cookieUrl.indexOf('checkout') === -1 && cookieUrl.indexOf('order-received') === -1) {
-            initialUrl = cookieUrl;
-            initialReferrer = cookieReferrer;
-            try {
-                if (typeof window !== 'undefined' && window.sessionStorage) {
-                    sessionStorage.setItem('cwsc_initial_url', initialUrl);
-                    if (initialReferrer) {
-                        sessionStorage.setItem('cwsc_initial_referrer', initialReferrer);
-                    }
-                }
-            } catch (e) {
-                // ignore
-            }
-            return initialUrl;
-        }
 
-        // If on checkout/thank you page and don't have initial URL yet, don't set it
+        // Don't set checkout/thank you page as initial URL.
         if (isCheckoutPage) {
-            // Don't set checkout page as initial URL, return current URL as fallback
-            return currentUrl;
+            // Try to get from cookie if available (from previous page).
+            var savedUrl = getCookie('cwsc_initial_url');
+            if (savedUrl && savedUrl.indexOf('checkout') === -1 && savedUrl.indexOf('order-received') === -1) {
+                currentUrl = savedUrl;
+            } else {
+                // Fallback: use current URL but this is not ideal.
+                // The real landing page should have been captured earlier.
+            }
         }
 
-        // First time visit in this session - set current URL and referrer as initial
-        initialUrl = currentUrl;
-        initialReferrer = currentReferrer;
+        // Detect source from current URL and referrer.
+        var source = detectSource(currentUrl, currentReferrer);
+
+        // Save permanently (180 days) - only set once (First Touch Attribution).
+        setCookiePermanent('cwsc_first_visit_order_link', currentUrl, 180);
+        setCookiePermanent('cwsc_first_visit_source', source, 180);
+        setCookiePermanent('cwsc_first_visit_set', '1', 180);
+
+        // Also save to sessionStorage for immediate access (current session).
         try {
             if (typeof window !== 'undefined' && window.sessionStorage) {
-                sessionStorage.setItem('cwsc_initial_url', initialUrl);
-                if (initialReferrer) {
-                    sessionStorage.setItem('cwsc_initial_referrer', initialReferrer);
-                }
+                sessionStorage.setItem('cwsc_first_visit_order_link', currentUrl);
+                sessionStorage.setItem('cwsc_first_visit_source', source);
             }
         } catch (e) {
-            // ignore
+            // Ignore storage errors.
         }
 
-        // Save to cookie for PHP to read with session ID
-        setCookie('cwsc_initial_url', initialUrl, 1);
-        setCookie('cwsc_session_id', sessionId, 1);
-        if (initialReferrer) {
-            setCookie('cwsc_initial_referrer', initialReferrer, 1);
-        }
-
-        return initialUrl;
+        // Also save to temporary cookie for PHP to read (for current session).
+        setCookie('cwsc_initial_url', currentUrl, 1);
+        setCookie('cwsc_customer_source', source, 1);
     }
 
-    function getInitialUrl() {
-        // Always prefer sessionStorage (current session)
+    /**
+     * Get First Visit data (Landing Page).
+     * Always returns the first visit URL, never overwritten.
+     */
+    function getFirstVisitUrl() {
+        // First, check permanent cookie (source of truth for First Touch Attribution).
+        var firstVisitUrl = getCookie('cwsc_first_visit_order_link');
+        if (firstVisitUrl) {
+            return firstVisitUrl;
+        }
+
+        // Fallback to sessionStorage (current session).
         try {
             if (typeof window !== 'undefined' && window.sessionStorage) {
-                var url = sessionStorage.getItem('cwsc_initial_url');
+                var url = sessionStorage.getItem('cwsc_first_visit_order_link');
                 if (url) return url;
             }
         } catch (e) {
-            // ignore
+            // Ignore storage errors.
         }
-        
-        // Check cookie with session ID match
-        var sessionId = getSessionId();
-        var cookieSessionId = getCookie('cwsc_session_id');
-        var cookieUrl = getCookie('cwsc_initial_url');
-        
-        // Only use cookie if session ID matches (same browser session)
-        if (cookieSessionId === sessionId && cookieUrl) {
-            return cookieUrl;
-        }
-        
-        // If no initial URL found, return current URL (but this should rarely happen)
-        // This is only for first page load before initInitialUrl() runs
+
+        // Final fallback: current URL (should rarely happen).
         return window.location.href;
     }
 
-    function getInitialReferrer() {
+    /**
+     * Get First Visit Source.
+     * Always returns the first visit source, never overwritten.
+     */
+    function getFirstVisitSource() {
+        // First, check permanent cookie (source of truth for First Touch Attribution).
+        var firstVisitSource = getCookie('cwsc_first_visit_source');
+        if (firstVisitSource) {
+            return firstVisitSource;
+        }
+
+        // Fallback to sessionStorage (current session).
         try {
             if (typeof window !== 'undefined' && window.sessionStorage) {
-                var ref = sessionStorage.getItem('cwsc_initial_referrer');
-                if (ref) return ref;
+                var source = sessionStorage.getItem('cwsc_first_visit_source');
+                if (source) return source;
             }
         } catch (e) {
-            // ignore
+            // Ignore storage errors.
         }
-        
-        var cookieRef = getCookie('cwsc_initial_referrer');
-        return cookieRef || '';
+
+        // Final fallback: detect from current page.
+        return detectSource(window.location.href, document.referrer || '');
     }
 
-    function detectSource() {
-        var initialUrl = getInitialUrl();
-        var initialReferrer = getInitialReferrer();
-        var urlParams = new URLSearchParams((initialUrl.split('?')[1] || ''));
+    /**
+     * Detect source from URL and referrer.
+     * 
+     * @param {string} url Current URL.
+     * @param {string} referrer Referrer URL.
+     * @return {string} Detected source.
+     */
+    function detectSource(url, referrer) {
+        var urlParams = new URLSearchParams((url.split('?')[1] || ''));
         var ua = (navigator.userAgent || '').toLowerCase();
-        var lowerUrl = initialUrl.toLowerCase();
+        var lowerUrl = url.toLowerCase();
         
         function getHost(u) {
             try { return new URL(u).hostname.toLowerCase(); } catch (e) { return ''; }
         }
-        var initialHost = getHost(initialUrl);
-        var refHost = getHost(initialReferrer);
+        var urlHost = getHost(url);
+        var refHost = getHost(referrer);
 
         var utmSource = (urlParams.get('utm_source') || '').toLowerCase();
 
         // Priority 1: UTM source parameter (treat as Ads for known platforms)
         if (utmSource) {
             if (utmSource.indexOf('facebook') !== -1 || utmSource.indexOf('instagram') !== -1) {
-                return (utmSource.indexOf('instagram') !== -1) ? 'Quảng Cáo Instagram' : 'Quảng Cáo Facebook';
+                return (utmSource.indexOf('instagram') !== -1) ? 'Instagram Ads' : 'Facebook Ads';
             }
             if (utmSource.indexOf('google') !== -1) {
-                return 'Quảng Cáo Google';
+                return 'Google Ads';
             }
             if (utmSource.indexOf('tiktok') !== -1) {
-                return 'Quảng Cáo TikTok';
+                return 'TikTok Ads';
             }
             if (utmSource.indexOf('zalo') !== -1) {
-                return 'Quảng Cáo Zalo';
-            }
-            if (utmSource.indexOf('twitter') !== -1 || utmSource.indexOf('x.com') !== -1 || utmSource.indexOf('x') !== -1) {
-                return 'Quảng Cáo X';
-            }
-            if (utmSource.indexOf('bing') !== -1) {
-                return 'Quảng Cáo Bing';
+                return 'Zalo Ads';
             }
             // Unknown paid source → return the raw utm_source
             return urlParams.get('utm_source');
@@ -219,83 +203,55 @@
         // Priority 2: Ad click identifiers
         // Facebook/Instagram Ads: fbclid → if ref/host suggests instagram, label Instagram; else Facebook
         if (lowerUrl.indexOf('fbclid') !== -1 || urlParams.has('fbclid')) {
-            if (initialHost.indexOf('instagram.com') !== -1 || refHost.indexOf('instagram.com') !== -1) {
-                return 'Quảng Cáo Instagram';
+            if (urlHost.indexOf('instagram.com') !== -1 || refHost.indexOf('instagram.com') !== -1) {
+                return 'Instagram Ads';
             }
-            return 'Quảng Cáo Facebook';
+            return 'Facebook Ads';
         }
         // Google Ads
         if (lowerUrl.indexOf('gclid') !== -1 || urlParams.has('gclid')) {
-            return 'Quảng Cáo Google';
-        }
-        // Bing Ads
-        if (lowerUrl.indexOf('msclkid') !== -1 || urlParams.has('msclkid')) {
-            return 'Quảng Cáo Bing';
+            return 'Google Ads';
         }
         // TikTok Ads
         if (lowerUrl.indexOf('ttclid') !== -1 || urlParams.has('ttclid')) {
-            return 'Quảng Cáo TikTok';
-        }
-        // X (Twitter) Ads
-        if (lowerUrl.indexOf('twclid') !== -1 || urlParams.has('twclid')) {
-            return 'Quảng Cáo X';
+            return 'TikTok Ads';
         }
 
         // Priority 3: Organic/Referral sources by known domains
         // Google SEO
         if (lowerUrl.indexOf('srsltid') !== -1 || urlParams.has('srsltid') || refHost.indexOf('google.') !== -1) {
-            return 'SEO Google';
+            return 'Google SEO';
         }
         // Instagram
-        if (initialHost.indexOf('instagram.com') !== -1 || refHost.indexOf('instagram.com') !== -1 || ua.indexOf('instagram') !== -1) {
+        if (urlHost.indexOf('instagram.com') !== -1 || refHost.indexOf('instagram.com') !== -1 || ua.indexOf('instagram') !== -1) {
             return 'Instagram';
         }
-        // X (Twitter)
-        if (initialHost.indexOf('x.com') !== -1 || refHost.indexOf('x.com') !== -1 || initialHost.indexOf('twitter.com') !== -1 || refHost.indexOf('twitter.com') !== -1 || initialHost.indexOf('t.co') !== -1 || refHost.indexOf('t.co') !== -1) {
-            return 'X';
-        }
         // YouTube
-        if (initialHost.indexOf('youtube.com') !== -1 || refHost.indexOf('youtube.com') !== -1 || initialHost.indexOf('youtu.be') !== -1 || refHost.indexOf('youtu.be') !== -1) {
+        if (urlHost.indexOf('youtube.com') !== -1 || refHost.indexOf('youtube.com') !== -1 || urlHost.indexOf('youtu.be') !== -1 || refHost.indexOf('youtu.be') !== -1) {
             return 'YouTube';
         }
         // Zalo
-        if (initialHost.indexOf('zalo') !== -1 || refHost.indexOf('zalo') !== -1 || ua.indexOf('zalo') !== -1) {
+        if (urlHost.indexOf('zalo') !== -1 || refHost.indexOf('zalo') !== -1 || ua.indexOf('zalo') !== -1) {
             return 'Zalo';
         }
         // TikTok
-        if (initialHost.indexOf('tiktok.com') !== -1 || refHost.indexOf('tiktok.com') !== -1 || ua.indexOf('tiktok') !== -1) {
+        if (urlHost.indexOf('tiktok.com') !== -1 || refHost.indexOf('tiktok.com') !== -1 || ua.indexOf('tiktok') !== -1) {
             return 'TikTok';
         }
         // Shopee
-        if (initialHost.indexOf('shopee.vn') !== -1 || refHost.indexOf('shopee.vn') !== -1) {
+        if (urlHost.indexOf('shopee.vn') !== -1 || refHost.indexOf('shopee.vn') !== -1) {
             return 'Shopee';
         }
-        // Lazada
-        if (initialHost.indexOf('lazada.vn') !== -1 || refHost.indexOf('lazada.vn') !== -1) {
-            return 'Lazada';
-        }
-        // Tiki
-        if (initialHost.indexOf('tiki.vn') !== -1 || refHost.indexOf('tiki.vn') !== -1) {
-            return 'Tiki';
-        }
-        // Sendo
-        if (initialHost.indexOf('sendo.vn') !== -1 || refHost.indexOf('sendo.vn') !== -1) {
-            return 'Sendo';
-        }
-        // Chợ Tốt
-        if (initialHost.indexOf('chotot.com') !== -1 || refHost.indexOf('chotot.com') !== -1) {
-            return 'Chợ Tốt';
-        }
-        // Cốc Cốc
-        if (initialHost.indexOf('coccoc.com') !== -1 || refHost.indexOf('coccoc.com') !== -1) {
-            return 'Cốc Cốc';
+        // Cốc Cốc (Vietnamese browser)
+        if (urlHost.indexOf('coccoc.com') !== -1 || refHost.indexOf('coccoc.com') !== -1) {
+            return 'Coc Coc';
         }
         // Facebook (organic/app)
-        if (initialHost.indexOf('facebook.com') !== -1 || refHost.indexOf('facebook.com') !== -1 || ua.indexOf('facebook') !== -1) {
+        if (urlHost.indexOf('facebook.com') !== -1 || refHost.indexOf('facebook.com') !== -1 || ua.indexOf('facebook') !== -1) {
             return 'Facebook';
         }
 
-        return 'Trực Tiếp Trên Web';
+        return 'Direct Visit';
     }
 
     function getBuyLink() {
@@ -318,40 +274,21 @@
         input.value = value;
     }
 
+    /**
+     * Hydrate forms with First Visit data.
+     * Uses First Touch Attribution - always uses the first visit values.
+     */
     function hydrateForms() {
-        // Ensure initial URL is set first
-        initInitialUrl();
-        
-        // Check if first visit data already exists (never overwrite)
-        var firstVisitSet = getCookie('cwsc_first_visit_set');
-        var firstVisitOrderLink = getCookie('cwsc_first_visit_order_link');
-        var firstVisitSource = getCookie('cwsc_first_visit_source');
-        
-        var orderLink;
-        var source;
-        
-        if (firstVisitSet && firstVisitOrderLink && firstVisitSource) {
-            // Already set - always use the first visit values (never change)
-            orderLink = firstVisitOrderLink;
-            source = firstVisitSource;
-        } else {
-            // First visit - detect and save permanently
-            orderLink = getInitialUrl();
-            source = detectSource();
-            
-            // Save permanently (180 days) - only set once
-            setCookiePermanent('cwsc_first_visit_order_link', orderLink);
-            setCookiePermanent('cwsc_first_visit_source', source);
-            setCookiePermanent('cwsc_first_visit_set', '1');
-        }
-        
+        // Get First Visit data (never overwritten).
+        var orderLink = getFirstVisitUrl();
+        var source = getFirstVisitSource();
         var buyLink = getBuyLink();
 
-        // Also save to temporary cookie for PHP to read (for current session)
+        // Also save to temporary cookie for PHP to read (for current session).
         setCookie('cwsc_customer_source', source, 1);
         setCookie('cwsc_initial_url', orderLink, 1);
 
-        // Target CF7 forms on the page
+        // Target CF7 forms on the page.
         var forms = document.querySelectorAll('.wpcf7 form');
         if (!forms || forms.length === 0) {
             return;
@@ -364,30 +301,29 @@
         });
     }
 
-    // Initialize on page load (run immediately)
-    initInitialUrl();
+    // CRITICAL: Capture First Visit data IMMEDIATELY when script loads.
+    // This runs before DOM ready to ensure we capture the landing page before any navigation.
+    captureFirstVisit();
 
-    // Run hydrateForms when DOM is ready
+    // Run hydrateForms when DOM is ready.
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', hydrateForms);
     } else {
         hydrateForms();
     }
     
-    // Re-hydrate forms before submission (for CF7)
-    // Hook into CF7 before submit event
+    // Re-hydrate forms before submission (for CF7).
+    // Hook into CF7 before submit event.
     document.addEventListener('wpcf7beforesubmit', function() {
         hydrateForms();
     }, true);
     
-    // Also hook into form submit events (fallback - update right before submit)
+    // Also hook into form submit events (fallback - update right before submit).
     document.addEventListener('submit', function(e) {
         var form = e.target;
         if (form && (form.classList.contains('wpcf7-form') || form.closest('.wpcf7'))) {
-            // Update values right before submit (synchronously)
+            // Update values right before submit (synchronously).
             hydrateForms();
         }
     }, true);
 })();
-
-

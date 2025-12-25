@@ -75,7 +75,7 @@ class CWSC_CF7 {
                             <?php if (!empty($settings['spreadsheet_id'])): ?>
                                 <p>
                                     <a href="<?php echo esc_url( 'https://docs.google.com/spreadsheets/d/' . $settings['spreadsheet_id'] ); ?>" target="_blank" class="button button-secondary">
-                                        <?php _e( 'Xem Google Sheet', 'cf7-woo-sheet-connector' ); ?>
+                                        <?php _e( 'View Google Sheet', 'cf7-woo-sheet-connector' ); ?>
                                     </a>
                                 </p>
                             <?php endif; ?>

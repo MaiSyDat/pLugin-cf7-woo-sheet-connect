@@ -47,10 +47,11 @@ function cwsc_get_current_timestamp() {
 }
 
 /**
- * Check if Google API library is available
+ * Check if Google API is available (OpenSSL extension required for JWT authentication)
  */
 function cwsc_is_google_api_available() {
-    return file_exists( CWSC_PLUGIN_DIR . 'vendor/autoload.php' );
+    // JWT authentication requires OpenSSL extension
+    return extension_loaded( 'openssl' );
 }
 
 /**
@@ -65,7 +66,7 @@ function cwsc_get_referrer_source() {
     if ( isset( $_COOKIE['cwsc_customer_source'] ) ) {
         return sanitize_text_field( $_COOKIE['cwsc_customer_source'] );
     }
-    return 'Trực Tiếp Trên Web';
+    return __( 'Direct Visit', 'cf7-woo-sheet-connector' );
 }
 
 /**
