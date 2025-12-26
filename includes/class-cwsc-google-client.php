@@ -235,7 +235,7 @@ class CWSC_Google_Client {
             }
             
             return array( 'success' => true, 'message' => __( 'Connection successful - Google API authentication working', 'cf7-woo-sheet-connector' ) );
-            
+
         } catch ( Exception $e ) {
             return array( 'success' => false, 'message' => $e->getMessage() );
         }
